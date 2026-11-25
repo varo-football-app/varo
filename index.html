@@ -384,6 +384,9 @@ const norm = x => String(x || '').toLowerCase().replace(/[\u064B-\u065F]/g, '').
 function drawList() {
   const el = $('#list'); if (!el) return; const q = norm(searchQ);
   const rows = allDay.filter(d => league === 'all' || d.league.slug === league).map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
+  const W = { live: 0, upcoming: 1, finished: 2 };
+  rows.forEach(d => { d.matches = [...d.matches].sort((x, y) => W[x.status] - W[y.status] || (x.status === 'finished' ? new Date(y.date) - new Date(x.date) : new Date(x.date) - new Date(y.date))); d.w = Math.min(...d.matches.map(m => W[m.status])); });
+  rows.sort((x, y) => x.w - y.w);
   el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
 let grpIdx = 0;
