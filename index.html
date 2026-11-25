@@ -62,10 +62,11 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 .pm b{position:relative;overflow:hidden}.pm b img.pp{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;background:#2a2a35}.pm em{display:none;position:absolute;top:22px;inset-inline-start:7px;font-style:normal;font-size:10px;font-weight:800;background:var(--red);color:#fff;border-radius:8px;padding:0 4px;border:1px solid #fff}.pm.aw em{background:#f2f2f5;color:#14141b;border-color:#14141b}.pm.hp em{display:block}.pm b{width:36px;height:36px}
 .gsw{display:flex;gap:8px;overflow-x:auto;padding:10px 12px 0;scrollbar-width:none}.gsw button{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}.gsw button.on{background:var(--red)}
 [data-t]{cursor:pointer}.cr{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:6px 12px;background:var(--card);border-radius:14px;cursor:pointer;font-size:13px}.cr .dt{width:64px;color:var(--mut);font-size:12px;line-height:1.4}.cr .tm{flex:1;display:flex;align-items:center;gap:6px;font-weight:600}.cr .tm img{width:22px;height:22px;object-fit:contain}.cr .tm.r{justify-content:flex-start}.cr .rs{min-width:46px;text-align:center;font-weight:800;font-size:16px}.cr .cmp{display:block;color:var(--mut);font-size:11px;font-weight:400}
+.br{display:flex;gap:14px;overflow-x:auto;padding:12px;align-items:stretch;scrollbar-width:none}.bc{min-width:158px;display:flex;flex-direction:column;gap:8px;justify-content:space-around}.bc h4{margin:0 0 4px;font-size:13px;color:var(--red);text-align:center}.bm{background:var(--card);border-radius:12px;padding:8px 10px;font-size:12px;position:relative}.bm .r{display:flex;align-items:center;gap:6px;padding:2px 0}.bm img{width:18px;height:18px;object-fit:contain}.bm b{margin-inline-start:auto}.bm.ph0{opacity:.55;text-align:center;border:1px dashed #333;background:0}.bc.fin .bm{border:1px solid var(--red)}.bg{background:var(--card);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:var(--mut)}.bg button{margin-top:8px;background:var(--red);color:#fff;border:0;border-radius:16px;padding:6px 14px;font:inherit;font-size:13px}
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo"><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
-<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues">الدوريات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
+<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'caf.champions', name: 'دوري أبطال أفريقيا' },
@@ -218,14 +219,21 @@ async function newsOf(s){
   if(s==='egypt-players'||(lgOf(s)&&lgOf(s).src==='tsdb')){const r=await Promise.allSettled(EGY_NEWS.map(newsOf));return filterEgyptNews(r.flatMap(x=>x.status==='fulfilled'?x.value:[]));}
   if(!lgOf(s))throw new Error('bad');return normalizeNews(await get(B+'/site/v2/sports/soccer/'+s+'/news?limit=50'));}
 async function standingsOf(s){const l=lgOf(s);if(!l)throw new Error('bad');
-  if(l.src==='tsdb'){const r=normalizeTsdbTable(await get(TS+'lookuptable.php?l='+l.tsdbId+'&s=2026-2027'));return r.length?[{name:'',rows:r}]:[];}
+  if(l.src==='tsdb'){try{return [{name:'',rows:await tmTable()}];}catch(e){}const r=normalizeTsdbTable(await get(TS+'lookuptable.php?l='+l.tsdbId+'&s=2026-2027'));return r.length?[{name:'',rows:r,partial:1}]:[];}
   return normalizeStandings(await get(B+'/v2/sports/soccer/'+s+'/standings'));}
 const CORE='https://sports.core.api.espn.com/v2/sports/soccer/leagues/',ATH='https://site.web.api.espn.com/apis/common/v3/sports/soccer/athletes/';
 async function leadersOf(slug){
+  if((lgOf(slug)||{}).src){const [g,a]=await Promise.all([tmLeaders('torschuetzenliste/wettbewerb/EGY1'),tmLeaders('assistliste/wettbewerb/EGY1')]);return{year:0,goals:g,assists:a,tm:1};}
   const j=await get(B+'/site/v2/sports/soccer/'+slug+'/statistics');
   const pick=n=>{const c=(j.stats||[]).find(x=>x.name===n);return c?(c.leaders||[]).slice(0,25).map(l=>{const a=l.athlete||{},t=a.team||{},mt=/Matches:\s*(\d+)/.exec(l.displayValue||'');return{id:a.id||'',name:a.displayName||'',team:t.displayName||'',logo:(t.logos&&t.logos[0]&&t.logos[0].href)||'',value:l.value,matches:mt?mt[1]:''};}):[];};
   return{year:j.season&&j.season.year,goals:pick('goalsLeaders'),assists:pick('assistsLeaders')};
 }
+const TMU='https://www.transfermarkt.com/egyptian-premier-league/';
+async function tmDoc(path){const c=new AbortController();setTimeout(()=>c.abort(),15000);const r=await fetch(TMU+path,{signal:c.signal,referrerPolicy:'no-referrer'});if(!r.ok)throw new Error('tm '+r.status);return new DOMParser().parseFromString(await r.text(),'text/html');}
+const tmRows=d=>[...d.querySelectorAll('table.items > tbody > tr')];
+const tx=e=>e?e.textContent.replace(/\s+/g,' ').trim():'';
+async function tmTable(){const d=await tmDoc('tabelle/wettbewerb/EGY1');const rows=tmRows(d).map(r=>{const t=r.children;if(t.length<10)return null;const a=t[2].querySelector('a');const im=t[1].querySelector('img');return{tid:'',rank:parseInt(tx(t[0])),team:tx(a),logo:im?im.getAttribute('src'):'',played:tx(t[3]),won:tx(t[4]),drawn:tx(t[5]),lost:tx(t[6]),gd:tx(t[8]),points:tx(t[9])};}).filter(r=>r&&r.team&&r.rank);if(rows.length<10)throw new Error('tm parse');return rows;}
+async function tmLeaders(path){const d=await tmDoc(path);return tmRows(d).map(r=>{const t=r.children;if(t.length<7)return null;const ph=t[1].querySelector('img'),a=t[1].querySelector('td.hauptlink a'),cl=t[4].querySelector('a');let u=ph&&(ph.getAttribute('data-src')||ph.getAttribute('src'))||'';if(/default\.jpg/.test(u)||/^data:/.test(u))u='';return{id:'',name:tx(a),team:cl?cl.getAttribute('title')||'':'',logo:'',photo:u,value:tx(t[t.length-1]),matches:tx(t[5])};}).filter(x=>x&&x.name).slice(0,25);}
 const yrCache={};
 async function clubOf(slug,id){const j=await get(B+'/site/v2/sports/soccer/'+slug+'/teams/'+id+'/schedule');const t=j.team||{};
   const ms=(j.events||[]).map(e=>{const c=(e.competitions||[])[0]||{},cs=c.competitors||[];const sd=x=>({id:x.team&&x.team.id,name:x.team&&(x.team.shortDisplayName||x.team.displayName)||'?',logo:x.team&&(x.team.logo||(x.team.logos&&x.team.logos[0]&&x.team.logos[0].href))||'',score:x.score===undefined||x.score===null?null:Number(typeof x.score==='object'?x.score.value:x.score)});
@@ -403,24 +411,48 @@ function stGroups(groups, slug) {
   return sw + stTable(groups[grpIdx].rows, slug);
 }
 const stTable = (rows, slug) => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="" onerror="this.style.visibility='hidden'">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
+const PHN = { 'League Phase': 'مرحلة الدوري', 'Group': 'دور المجموعات', 'Group Stage': 'دور المجموعات', 'Groups': 'دور المجموعات', 'Knockout Round Playoffs': 'ملحق الأدوار الإقصائية', 'Rd of 16': 'دور الـ16', 'Round of 16': 'دور الـ16', 'Round of 32': 'دور الـ32', 'Quarterfinals': 'ربع النهائي', 'Semifinals': 'نصف النهائي', 'Final': 'النهائي', 'Finals': 'النهائي', 'Third Place': 'المركز الثالث' };
+const PHC = { 'ملحق الأدوار الإقصائية': 8, 'دور الـ16': 8, 'دور الـ32': 16, 'ربع النهائي': 4, 'نصف النهائي': 2, 'النهائي': 1 };
+async function calOf(slug) { if (calC[slug]) return calC[slug]; const j = await get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard'); const ent = ((((j.leagues || [])[0] || {}).calendar || [])[0] || {}).entries || []; return calC[slug] = ent.length >= 2 && ent.length <= 12 ? ent : []; }
+async function bracketHTML(slug, ent) {
+  const yrs = [...new Set(ent.map(e => e.startDate.slice(0, 4)).concat(ent.map(e => e.endDate.slice(0, 4))))];
+  const ev = (await Promise.allSettled(yrs.map(y => get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard?dates=' + y + '&limit=1000')))).flatMap(r => r.status === 'fulfilled' ? normalizeScoreboard(r.value, slug) : []);
+  const ph = ent.filter(e => !/prelim|qualif/i.test(e.label)); const seen = new Set();
+  const cols = ph.map(e => { const nm = PHN[e.label] || e.label, isG = /group|league phase/i.test(e.label), a = Date.parse(e.startDate), b = Date.parse(e.endDate);
+    if (isG) return `<div class="bc"><h4>${esc(nm)}</h4><div class="bg">${esc(new Date(a).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) + ' - ' + new Date(b).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }))}<br><button data-lsub="st">عرض ترتيب المجموعات</button></div></div>`;
+    const ms = ev.filter(m => { const t = Date.parse(m.date); return t >= a && t <= b && !seen.has(m.id); }); ms.forEach(m => seen.add(m.id)); ms.sort((x, y) => new Date(x.date) - new Date(y.date));
+    const n = PHC[nm] || 2, card = m => { MM[slug + '|' + m.id] = m; const sc = m.status === 'upcoming' ? esc(new Date(m.date).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })) : ''; const r = (x) => `<div class="r"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span><b>${m.status === 'upcoming' ? '' : x.score ?? 0}</b></div>`; return `<div class="bm" data-m="${esc(slug)}|${esc(m.id)}" style="cursor:pointer">${r(m.home)}${r(m.away)}${sc ? '<div style="color:var(--mut);font-size:11px;text-align:center">' + sc + '</div>' : ''}</div>`; };
+    const body = ms.length ? ms.map(card).join('') : Array.from({ length: n }, () => '<div class="bm ph0">؟<br>لم يُحدد بعد</div>').join('');
+    return `<div class="bc${nm === 'النهائي' ? ' fin' : ''}"><h4>${nm === 'النهائي' ? '🏆 ' : ''}${esc(nm)}</h4>${body}</div>`; });
+  return '<div class="br">' + cols.join('') + '</div><div class="empty" style="font-size:12px;padding:6px 12px">الأدوار الإقصائية بالذهاب والإياب تظهر كمباراتين منفصلتين. الخانات الفارغة لم تُحدد بعد.</div>';
+}
 async function renderLeague() {
   const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
-  const seg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
+  let ent = []; if (!L.src) { try { ent = await calOf(lg); } catch (e) { } }
+  const seg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].concat(ent.length ? [['br', 'المسار']] : []).map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
   const head = back + `<div class="lg" style="font-size:17px;color:var(--tx)">${esc(L.name)}</div>` + seg;
   main.innerHTML = head + '<div class="empty">جاري التحميل...</div>';
   let body = '';
   try {
-    if (lgSub === 'st') { const gs = await api('/api/standings/' + lg); body = gs.length ? stGroups(gs, lg) : '<div class="empty">لا يوجد جدول ترتيب لهذه البطولة من المصدر (نظام خروج المغلوب أو غير متاح)</div>'; }
-    else if (L.src) body = '<div class="empty">المصدر المتاح للدوري المصري لا يوفر الهدافين وصناع الأهداف</div>';
+    if (lgSub === 'br') body = await bracketHTML(lg, ent);
+    else if (lgSub === 'st') { const gs = await api('/api/standings/' + lg); body = gs.length ? stGroups(gs, lg) + (gs[0].partial ? '<div class="empty" style="padding:8px">جدول جزئي: تعذر الوصول إلى Transfermarkt</div>' : L.src ? '<div class="empty" style="padding:8px;font-size:12px">المصدر: Transfermarkt</div>' : '') : '<div class="empty">لا يوجد جدول ترتيب لهذه البطولة من المصدر (نظام خروج المغلوب أو غير متاح)</div>'; }
     else {
       const j = await api('/api/leaders/' + lg), arr = lgSub === 'sc' ? j.goals : j.assists;
-      body = arr.length ? arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.id ? ph(x.id, x.name) : ''}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
+      body = arr.length ? (j.tm ? '<div class="empty" style="padding:6px;font-size:12px">المصدر: Transfermarkt</div>' : '') + arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.photo ? `<img class="ph" loading="lazy" alt="" referrerpolicy="no-referrer" src="${esc(x.photo)}" onerror="this.onerror=null;this.src=PHF">` : x.id ? ph(x.id, x.name) : x.tm0 ? '' : `<img class="ph" alt="" src="${PHF}">`}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
     }
   } catch (e) { body = '<div class="empty">تعذر التحميل، حاول مرة أخرى</div>'; }
   if (lg === L.slug) main.innerHTML = head + body;
 }
 const PRIO = ['egy.1', 'caf.champions', 'caf.confed', 'uefa.champions', 'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.europa', 'uefa.europa.conf', 'ksa.1', 'fifa.world', 'fifa.worldq.caf', 'caf.nations', 'uefa.nations', 'fifa.worldq.uefa', 'fifa.cwc', 'conmebol.libertadores', 'afc.champions', 'por.1', 'ned.1', 'tur.1', 'eng.fa', 'eng.league_cup', 'esp.copa_del_rey', 'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france', 'conmebol.sudamericana', 'bra.1', 'arg.1', 'usa.1', 'eng.2', 'fifa.friendly'];
-function leaguesOrdered() { const r = s => { const i = PRIO.indexOf(s); return i < 0 ? 999 : i; }; return leagues.map((l, i) => [l, i]).sort((a, b) => r(a[0].slug) - r(b[0].slug) || a[1] - b[1]).map(x => x[0]); }
+let finished = new Set(); const calC = {};
+function isFin(j) { const l = (j.leagues || [])[0] || {}, now = Date.now(), se = l.season || {}; if (se.endDate && Date.parse(se.endDate) < now) return true;
+  const cal = l.calendar || [], ent = (cal[0] && cal[0].entries) || []; if (ent.length > 1 && ent.every(e => e.endDate && Date.parse(e.endDate) < now)) return true;
+  const ev = j.events || []; if (ev.length && ent.length <= 1 && ev.every(e => e.status && e.status.type && e.status.type.state === 'post' && Date.parse(e.date) < now - 30 * 864e5)) return true; return false; }
+async function loadFinished() { try { const c = JSON.parse(localStorage.getItem('varo_fin') || 'null'); if (c && Date.now() - c.t < 6 * 36e5) { finished = new Set(c.l); return; } } catch (e) { }
+  const r = await Promise.allSettled(LEAGUES.filter(l => !l.src).map(async l => { const j = await get(B + '/site/v2/sports/soccer/' + l.slug + '/scoreboard'); return [l.slug, isFin(j)]; }));
+  finished = new Set(r.filter(x => x.status === 'fulfilled' && x.value[1]).map(x => x.value[0])); try { localStorage.setItem('varo_fin', JSON.stringify({ t: Date.now(), l: [...finished] })); } catch (e) { } }
+function leaguesOrdered() { const r = s => { const i = PRIO.indexOf(s); return i < 0 ? 999 : i; }; return leagues.map((l, i) => [l, i]).sort((a, b) => r(a[0].slug) - r(b[0].slug) || a[1] - b[1])
+  .map(x => x[0]).filter(l => !finished.has(l.slug) || l.slug === lg); }
 function drawLeagues() {
   const q = norm(searchQ), arr = leaguesOrdered().filter(l => !q || norm(l.name).includes(q));
   main.innerHTML = '<div class="lg">اختر دوري أو بطولة</div>' + (arr.map(l => `<div class="lrow" data-lg="${l.slug}"><span>${esc(l.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>`).join('') || '<div class="empty">لا نتائج</div>');
@@ -499,5 +531,5 @@ document.addEventListener('click', e => {
 (async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; club = null; player = null; grpIdx = 0; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
   document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
-  leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
+  leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
