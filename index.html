@@ -397,7 +397,7 @@ function subsHTML(lu, subs) {
 }
 const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${p.id ? ph(p.id, p.name) : ''}${pn(p.id, p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
 async function renderDetail() {
-  main.innerHTML = '<div class="empty">جاري التحميل...</div>';
+  if (!window.SILENT) main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   const m = MM[detail.slug + '|' + detail.id]; curSlug = detail.slug;
   const tid = x => { const mm = m && [m.home, m.away].find(y => y.name === x.name); return mm && mm.id && !(lgOf(detail.slug) || {}).src ? mm.id : ''; };
@@ -584,7 +584,7 @@ async function render() {
   if (club) return renderClub();
   if (tab === 'leagues') { if (lg) return renderLeague(); return drawLeagues(); }
   if (detail) return renderDetail();
-  main.innerHTML = '<div class="empty">جاري التحميل...</div>';
+  if (!window.SILENT) main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   try {
     if (tab === 'matches') {
       const target = dayAt(dayOff), ds = [ymd(dayAt(dayOff - 1)), ymd(target)];
@@ -602,7 +602,7 @@ async function render() {
       const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; let items = await api('/api/news/' + slug); fxOn = true; items = await trItems(items);
       main.innerHTML = items.map(n => { NW[n.id] = n; return `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></div>`; }).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
     }
-  } catch (e) { main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small></div>'; }
+  } catch (e) { if (!window.SILENT) main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small></div>'; }
 }
 function chips() {
   const ordered = leaguesOrdered();
@@ -643,7 +643,7 @@ document.addEventListener('click', e => {
 (async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; club = null; player = null; grpIdx = 0; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
   document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
-  leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (article || player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
+  leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (article || player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) { window.SILENT = true; Promise.resolve(render()).catch(() => { }).finally(() => { window.SILENT = false; }); } }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script><script>
 (function(){
 const nav=document.querySelector('nav');nav.setAttribute('aria-label','التنقل الرئيسي');
