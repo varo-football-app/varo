@@ -20,6 +20,13 @@ header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6p
 .opt:active{background:#22222c}.opt.on{background:rgba(216,35,42,.16);color:#fff;font-weight:700}
 .opt .ck{width:9px;height:9px;border-radius:50%;background:var(--red);opacity:0;transform:scale(.4);transition:all .2s ease;flex:none}.opt.on .ck{opacity:1;transform:none}
 .opt small{color:var(--mut);font-size:12px;margin-inline-start:auto;padding-inline-start:8px}
+
+.pa{border-bottom:1px dotted rgba(216,35,42,.7);cursor:pointer}.pa:active{color:var(--red)}
+.lrow{display:flex;align-items:center;gap:10px;padding:11px 12px;margin:6px 12px;background:var(--card);border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}.lrow:active{transform:scale(.98)}.lrow svg{margin-inline-start:auto;color:var(--red);transform:rotate(90deg)}
+.seg{display:flex;gap:6px;padding:10px 12px 2px}.seg button{flex:1;background:var(--card);color:var(--tx);border:0;border-radius:12px;padding:9px 4px;font:inherit;font-size:14px;transition:all .25s}.seg button.on{background:var(--red)}
+.ld{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:6px 12px;background:var(--card);border-radius:14px}.ld .rk{width:22px;color:var(--mut);text-align:center;font-weight:700}.ld img{width:26px;height:26px;object-fit:contain}.ld .nm{flex:1;font-size:14px;font-weight:600;line-height:1.3}.ld small{display:block;color:var(--mut);font-weight:400;font-size:12px}.ld .vl{font-size:20px;font-weight:800;color:var(--red);min-width:30px;text-align:center}
+.pc{margin:10px 12px;background:var(--card);border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center}.pc img{width:44px;height:44px;object-fit:contain}.pc h2{margin:0 0 4px;font-size:19px}.pc div{font-size:13px;color:var(--mut);line-height:1.6}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px}.tile{background:var(--card);border-radius:14px;padding:12px 6px;text-align:center}.tile b{display:block;font-size:22px;color:var(--tx)}.tile.hl b{color:var(--red)}.tile span{font-size:12px;color:var(--mut)}
 .logo{font-weight:800;font-size:22px;text-align:center;padding-bottom:8px}.logo b{color:var(--red)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
 .chip{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}
@@ -39,12 +46,12 @@ tr+tr{border-top:1px solid #20202a}.pts{font-weight:800;color:var(--red)}
 .news img{width:110px;height:90px;object-fit:cover}.news div{padding:8px 4px;font-size:14px;line-height:1.4}
 .empty{text-align:center;color:var(--mut);padding:40px}
 nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:auto;display:flex;background:#101015;border-top:1px solid #222}
-nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px;font:inherit}nav button.on{color:var(--red);font-weight:700}
+nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:inherit;font-size:13px;white-space:nowrap}nav button.on{color:var(--red);font-weight:700}
 .m[data-m]{cursor:pointer}.ev{display:flex;gap:10px;padding:7px 2px;font-size:13px;border-top:1px solid #20202a}.ev span:first-child{color:var(--mut);width:36px}.pl{padding:6px 2px;font-size:14px;border-top:1px solid #20202a}.pl b{display:inline-block;width:26px;color:var(--red)}.pl small{color:var(--mut)}
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo"><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
-<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
+<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues">الدوريات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'caf.champions', name: 'دوري أبطال أفريقيا' },
@@ -120,7 +127,7 @@ function normalizeScoreboard(json, league) {
     const side = t => ({ name: (t.team && (t.team.shortDisplayName || t.team.displayName)) || '?', logo: t.team && t.team.logo || '', score: t.score === undefined ? null : Number(t.score) });
     const goals = (c.details || []).filter(d => d.scoringPlay).map(d => ({
       minute: d.clock && d.clock.displayValue || '', team: d.team && d.team.id,
-      player: (d.athletesInvolved || [])[0] && d.athletesInvolved[0].displayName || '', own: !!d.ownGoal, penalty: !!d.penaltyKick }));
+      player: (d.athletesInvolved || [])[0] && d.athletesInvolved[0].displayName || '', pid: (d.athletesInvolved || [])[0] && d.athletesInvolved[0].id || '', own: !!d.ownGoal, penalty: !!d.penaltyKick }));
     return { id: ev.id, league, date: ev.date, status: statusOf(ev.status), clock: ev.status && ev.status.displayClock || '',
       detail: ev.status && ev.status.type && ev.status.type.shortDetail || '',
       home: { ...side(home), id: home.team && home.team.id }, away: { ...side(away), id: away.team && away.team.id }, goals };
@@ -167,9 +174,9 @@ function normalizeSummary(j) {
   const names = {}; (comp.competitors || []).forEach(c => { if (c.team) names[c.team.id] = c.team.shortDisplayName || c.team.displayName; });
   const icon = t => { t = String(t || '').toLowerCase(); return /own/.test(t) && /goal/.test(t) ? '⚽ (ع.م)' : /goal|penalty---scored/.test(t) ? '⚽' : /yellow/.test(t) ? '🟨' : /red/.test(t) ? '🟥' : /substitution/.test(t) ? '🔁' : /penalty/.test(t) ? '⛔' : ''; };
   const events = (j.keyEvents || []).map(k => ({ minute: k.clock && k.clock.displayValue || '', icon: icon(k.type && (k.type.type || k.type.text)), team: k.team && (names[k.team.id] || k.team.displayName) || '',
-    text: (k.shortText || k.text || '').replace(/ (Goal|Substitution|Yellow Card|Red Card)\b/, '') })).filter(e => e.icon);
+    text: (k.shortText || k.text || '').replace(/ (Goal|Substitution|Yellow Card|Red Card)\b/, ''), pid: (k.participants && k.participants[0] && k.participants[0].athlete && k.participants[0].athlete.id) || '' })).filter(e => e.icon);
   const lineups = (j.rosters || []).map(r => {
-    const p = x => ({ jersey: x.jersey || '', name: x.athlete && (x.athlete.displayName || x.athlete.fullName) || '', pos: x.position && x.position.abbreviation || '' });
+    const p = x => ({ id: x.athlete && x.athlete.id || '', jersey: x.jersey || '', name: x.athlete && (x.athlete.displayName || x.athlete.fullName) || '', pos: x.position && x.position.abbreviation || '' });
     const list = r.roster || [];
     return { team: r.team && (r.team.shortDisplayName || r.team.displayName) || '', homeAway: r.homeAway, formation: r.formation || '', starters: list.filter(x => x.starter).map(p), subs: list.filter(x => !x.starter).map(p) };
   });
@@ -193,6 +200,21 @@ async function newsOf(s){
 async function standingsOf(s){const l=lgOf(s);if(!l)throw new Error('bad');
   if(l.src==='tsdb')return normalizeTsdbTable(await get(TS+'lookuptable.php?l='+l.tsdbId+'&s=2026-2027'));
   return normalizeStandings(await get(B+'/v2/sports/soccer/'+s+'/standings'));}
+const CORE='https://sports.core.api.espn.com/v2/sports/soccer/leagues/',ATH='https://site.web.api.espn.com/apis/common/v3/sports/soccer/athletes/';
+async function leadersOf(slug){
+  const j=await get(B+'/site/v2/sports/soccer/'+slug+'/statistics');
+  const pick=n=>{const c=(j.stats||[]).find(x=>x.name===n);return c?(c.leaders||[]).slice(0,25).map(l=>{const a=l.athlete||{},t=a.team||{},mt=/Matches:\s*(\d+)/.exec(l.displayValue||'');return{id:a.id||'',name:a.displayName||'',team:t.displayName||'',logo:(t.logos&&t.logos[0]&&t.logos[0].href)||'',value:l.value,matches:mt?mt[1]:''};}):[];};
+  return{year:j.season&&j.season.year,goals:pick('goalsLeaders'),assists:pick('assistsLeaders')};
+}
+const yrCache={};
+async function seasonYear(slug){if(yrCache[slug])return yrCache[slug];const j=await get(B+'/site/v2/sports/soccer/'+slug+'/statistics');return yrCache[slug]=(j.season&&j.season.year)||new Date().getFullYear();}
+async function playerOf(slug,id){
+  const yr=await seasonYear(slug).catch(()=>new Date().getFullYear());
+  const [info,st]=await Promise.allSettled([get(ATH+id),get(CORE+slug+'/seasons/'+yr+'/types/1/athletes/'+id+'/statistics').catch(()=>get(CORE+slug+'/seasons/'+yr+'/athletes/'+id+'/statistics'))]);
+  const a=info.status==='fulfilled'?(info.value.athlete||{}):{};
+  const stats={};if(st.status==='fulfilled'&&st.value.splits)(st.value.splits.categories||[]).forEach(c=>(c.stats||[]).forEach(x=>{stats[x.name]=x.value;}));
+  return{name:a.displayName||'',team:a.team&&a.team.displayName||'',teamLogo:a.team&&a.team.logos&&a.team.logos[0]&&a.team.logos[0].href||'',pos:a.position&&a.position.displayName||'',posAbbr:a.position&&a.position.abbreviation||'',jersey:a.jersey||'',age:a.age||'',nat:a.citizenship||'',flag:a.flag&&a.flag.href||'',height:a.displayHeight||'',year:yr,stats,hasStats:Object.keys(stats).length>0};
+}
 async function apiFetch(u0){const [u,qs]=u0.split('?');const q=new URLSearchParams(qs||'').get('date');
   if(u==='/api/leagues')return LEAGUES;
   if(u==='/api/matches'){const r=await Promise.allSettled(LEAGUES.map(async l=>({league:l,matches:await matchesOf(l.slug,q)})));return r.filter(x=>x.status==='fulfilled'&&x.value.matches.length).map(x=>x.value);}
@@ -201,6 +223,8 @@ async function apiFetch(u0){const [u,qs]=u0.split('?');const q=new URLSearchPara
   if(m=u.match(/^\/api\/matches\/([\w.]+)$/))return matchesOf(m[1],q);
   if(m=u.match(/^\/api\/news\/([\w.\-]+)$/))return newsOf(m[1]);
   if(m=u.match(/^\/api\/standings\/([\w.]+)$/))return standingsOf(m[1]);
+  if (m = u.match(/^\/api\/leaders\/([\w.]+)$/)) return leadersOf(m[1]);
+  if (m = u.match(/^\/api\/player\/([\w.]+)\/(\d+)$/)) return playerOf(m[1], m[2]);
   throw new Error('bad');
 }const Q = new URLSearchParams(location.search);
 let detail = null, dayOff = 0; // dayOff is never persisted: every load/refresh opens on today
@@ -227,7 +251,7 @@ const MM = {};
 function card(m) {
   MM[m.league + '|' + m.id] = m;
   const sc = m.status === 'upcoming' ? '-' : `${m.away.score ?? 0} : ${m.home.score ?? 0}`;
-  const goals = m.goals.length ? `<div class="goals">${m.goals.map(g => `<div class="gl" dir="auto">⚽ ${esc(g.player)} <span class="gm">${esc(String(g.minute).replace(/'/g, '').replace(/^/, ''))}'</span></div>`).join('')}</div>` : '';
+  const goals = m.goals.length ? `<div class="goals">${m.goals.map(g => `<div class="gl" dir="auto">⚽ ${pn(g.pid, g.player, m.league)} <span class="gm">${esc(String(g.minute).replace(/'/g, '').replace(/^/, ''))}'</span></div>`).join('')}</div>` : '';
   const t = x => `<div class="t"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
   return `<div class="m ${m.status}" data-m="${esc(m.league)}|${esc(m.id)}">${t(m.home)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${esc(stText(m))}</div></div>${t(m.away)}${goals}</div>`;
 }
@@ -236,24 +260,26 @@ async function typicalXI(slug, tid) {
   const done = (sc.events || []).filter(e => e.competitions && e.competitions[0].status.type.state === 'post').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   const sums = (await Promise.allSettled(done.map(e => get(B + '/site/v2/sports/soccer/' + slug + '/summary?event=' + e.id)))).filter(x => x.status === 'fulfilled').map(x => x.value);
   const cnt = new Map();
-  sums.forEach(j => (j.rosters || []).forEach(r => { if (String(r.team && r.team.id) !== String(tid)) return; (r.roster || []).forEach(p => { if (!p.starter || !p.athlete) return; const k = p.athlete.id; const o = cnt.get(k) || { n: 0, name: p.athlete.displayName || p.athlete.fullName || '', jersey: p.jersey || '', pos: p.position && p.position.abbreviation || '' }; o.n++; if (p.jersey) o.jersey = p.jersey; cnt.set(k, o); }); }));
+  sums.forEach(j => (j.rosters || []).forEach(r => { if (String(r.team && r.team.id) !== String(tid)) return; (r.roster || []).forEach(p => { if (!p.starter || !p.athlete) return; const k = p.athlete.id; const o = cnt.get(k) || { n: 0, id: k, name: p.athlete.displayName || p.athlete.fullName || '', jersey: p.jersey || '', pos: p.position && p.position.abbreviation || '' }; o.n++; if (p.jersey) o.jersey = p.jersey; cnt.set(k, o); }); }));
   const players = [...cnt.values()].sort((a, b) => b.n - a.n).slice(0, 11);
   return { games: sums.length, players };
 }
-const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${esc(p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
+let curSlug = '';
+const pn = (id, name, slug) => id ? `<a class="pa" data-p="${esc(id)}|${esc(slug || curSlug)}">${esc(name)}</a>` : esc(name);
+const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${pn(p.id, p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
 async function renderDetail() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
-  const m = MM[detail.slug + '|' + detail.id];
+  const m = MM[detail.slug + '|' + detail.id]; curSlug = detail.slug;
   const t = x => `<div class="t"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
   const head = (h, a, status, clock) => { const sc = status === 'upcoming' ? '-' : `${a.score ?? 0} : ${h.score ?? 0}`; return `<div class="m ${status}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${status === 'live' ? 'مباشر ' + esc(clock) : status === 'finished' ? 'انتهت' : m ? esc(stText(m)) : 'لم تبدأ'}</div></div>${t(a)}</div>`; };
-  const goalsOf = x => x && x.goals && x.goals.length ? x.goals.map(g => `<div class="ev"><span>${esc(g.minute)}</span><span>⚽</span><span>${esc(g.player)}${g.own ? ' (ع.م)' : ''}${g.penalty ? ' (ض.ج)' : ''}</span></div>`).join('') : '';
+  const goalsOf = x => x && x.goals && x.goals.length ? x.goals.map(g => `<div class="ev"><span>${esc(g.minute)}</span><span>⚽</span><span>${pn(g.pid, g.player)}${g.own ? ' (ع.م)' : ''}${g.penalty ? ' (ض.ج)' : ''}</span></div>`).join('') : '';
   let d = null;
   try { const l = lgOf(detail.slug); if (l && !l.src && /^\d+$/.test(detail.id)) d = await api('/api/match/' + detail.slug + '/' + detail.id); } catch (e) { d = null; }
   let h, a, status, clock, ev = '', lu = '';
   if (d) {
     h = d.teams.find(x => x.homeAway === 'home') || d.teams[0]; a = d.teams.find(x => x.homeAway === 'away') || d.teams[1]; status = d.status; clock = d.clock;
-    ev = d.events.length ? d.events.map(e => `<div class="ev"><span>${esc(e.minute)}</span><span>${e.icon}</span><span>${esc(e.text)}</span></div>`).join('') : (m && goalsOf(m)) || '';
+    ev = d.events.length ? d.events.map(e => `<div class="ev"><span>${esc(e.minute)}</span><span>${e.icon}</span><span>${pn(e.pid, e.text)}</span></div>`).join('') : (m && goalsOf(m)) || '';
   } else if (m) { h = m.home; a = m.away; status = m.status; clock = m.clock; ev = goalsOf(m); }
   else { main.innerHTML = back + '<div class="empty">تفاصيل المباراة غير متاحة</div>'; return; }
   if (!ev) ev = status === 'upcoming' ? '' : '<div class="empty">المصدر لا يوفر أحداث هذه المباراة (النتيجة فقط)</div>';
@@ -283,7 +309,46 @@ function drawList() {
   const rows = allDay.filter(d => league === 'all' || d.league.slug === league).map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
   el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
+let hist = [], lg = null, lgSub = 'st', player = null;
+const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
+async function renderPlayer() {
+  main.innerHTML = '<div class="empty">جاري التحميل...</div>';
+  const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
+  let p; try { p = await api('/api/player/' + player.slug + '/' + player.id); } catch (e) { main.innerHTML = back + '<div class="empty">تعذر تحميل بيانات اللاعب</div>'; return; }
+  const L = lgOf(player.slug), S = p.stats, gk = p.posAbbr === 'G';
+  const T = (k, l, hl) => S[k] === undefined ? '' : `<div class="tile${hl ? ' hl' : ''}"><b>${fmt(S[k])}</b><span>${l}</span></div>`;
+  const tiles = gk ? [['appearances', 'المباريات'], ['minutes', 'الدقائق'], ['saves', 'التصديات', 1], ['cleanSheet', 'شباك نظيفة', 1], ['goalsConceded', 'أهداف دخلت'], ['shotsFaced', 'تسديدات واجهها'], ['yellowCards', 'صفراء'], ['redCards', 'حمراء']]
+    : [['appearances', 'المباريات'], ['starts', 'أساسي'], ['minutes', 'الدقائق'], ['totalGoals', 'الأهداف', 1], ['goalAssists', 'التمريرات الحاسمة', 1], ['totalShots', 'التسديدات'], ['shotsOnTarget', 'على المرمى'], ['accuratePasses', 'تمريرات صحيحة'], ['foulsCommitted', 'أخطاء'], ['yellowCards', 'صفراء'], ['redCards', 'حمراء'], ['offsides', 'تسلل']];
+  const info = [p.pos, p.jersey ? '#' + p.jersey : '', p.age ? p.age + ' سنة' : '', p.nat, p.height].filter(Boolean).map(esc).join(' • ');
+  main.innerHTML = back + `<div class="pc">${p.teamLogo ? `<img src="${esc(p.teamLogo)}" alt="">` : ''}<div><h2>${esc(p.name || 'لاعب')}</h2><div>${esc(p.team)}</div><div>${info}</div></div></div>` +
+    `<div class="lg">إحصائيات الموسم${L ? ' · ' + esc(L.name) : ''} (${p.year}-${String(p.year + 1).slice(2)})</div>` +
+    (p.hasStats ? `<div class="tiles">${tiles.map(t => T(...t)).join('')}</div>` : '<div class="empty">المصدر لا يوفر إحصائيات هذا اللاعب في هذه البطولة</div>');
+}
+const stTable = rows => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"><img src="${esc(r.logo)}" alt="">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
+async function renderLeague() {
+  const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
+  const seg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
+  const head = back + `<div class="lg" style="font-size:17px;color:var(--tx)">${esc(L.name)}</div>` + seg;
+  main.innerHTML = head + '<div class="empty">جاري التحميل...</div>';
+  let body = '';
+  try {
+    if (lgSub === 'st') { const rows = await api('/api/standings/' + lg); body = rows.length ? stTable(rows) : '<div class="empty">لا يوجد جدول ترتيب لهذه البطولة من المصدر (نظام خروج المغلوب أو غير متاح)</div>'; }
+    else if (L.src) body = '<div class="empty">المصدر المتاح للدوري المصري لا يوفر الهدافين وصناع الأهداف</div>';
+    else {
+      const j = await api('/api/leaders/' + lg), arr = lgSub === 'sc' ? j.goals : j.assists;
+      body = arr.length ? arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
+    }
+  } catch (e) { body = '<div class="empty">تعذر التحميل، حاول مرة أخرى</div>'; }
+  if (lg === L.slug) main.innerHTML = head + body;
+}
+function leaguesOrdered() { const PIN = ['egy.1', 'caf.champions', 'caf.confed', 'uefa.champions', 'uefa.europa', 'uefa.europa.conf']; return [...PIN.map(p => leagues.find(l => l.slug === p)).filter(Boolean), ...leagues.filter(l => !PIN.includes(l.slug))]; }
+function drawLeagues() {
+  const q = norm(searchQ), arr = leaguesOrdered().filter(l => !q || norm(l.name).includes(q));
+  main.innerHTML = '<div class="lg">اختر دوري أو بطولة</div>' + (arr.map(l => `<div class="lrow" data-lg="${l.slug}"><span>${esc(l.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>`).join('') || '<div class="empty">لا نتائج</div>');
+}
 async function render() {
+  if (player) return renderPlayer();
+  if (tab === 'leagues') { if (lg) return renderLeague(); return drawLeagues(); }
   if (detail) return renderDetail();
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   try {
@@ -311,6 +376,7 @@ function chips() {
   let opts;
   if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
   else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
+  $('#lsel').style.display = tab === 'leagues' ? 'none' : '';
   const sel = $('#lsel'), all = [{ slug: 'all', name: 'كل البطولات' }, ...opts];
   const html = all.map(l => `<div class="opt${l.slug === league ? ' on' : ''}" role="option" data-v="${l.slug}">${(() => { const m = /^(.*) \((\d+)\)$/.exec(l.name); return m ? `<span>${esc(m[1])}</span><small>${m[2]}</small>` : `<span>${esc(l.name)}</span>`; })()}<i class="ck"></i></div>`).join('');
   sel.querySelector('.ddp').innerHTML = html;
@@ -321,15 +387,22 @@ const mainEl = document.getElementById('main');
 new MutationObserver(() => { if (!fxOn || /جاري التحميل/.test(mainEl.textContent)) return; fxOn = false; mainEl.classList.remove('fx'); void mainEl.offsetWidth; mainEl.classList.add('fx'); }).observe(mainEl, { childList: true });
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab]')) fxOn = true;
+  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p]')) fxOn = true;
+  const pa = e.target.closest('[data-p]'); if (pa) { e.stopPropagation(); const [id, slug] = pa.dataset.p.split('|'); hist.push({ tab, detail, lg, player }); player = { id, slug }; scrollTo(0, 0); return render(); }
   const dd = e.target.closest('[data-day]'); if (dd) { dayOff = Number(dd.dataset.day); return render(); }
   const mm = e.target.closest('[data-m]'); if (mm) { const [slug, id] = mm.dataset.m.split('|'); detail = { slug, id }; scrollTo(0, 0); return render(); }
-  if (e.target.closest('[data-back]')) { detail = null; return render(); }
+  const lr = e.target.closest('[data-lg]'); if (lr) { lg = lr.dataset.lg; lgSub = 'st'; scrollTo(0, 0); return render(); }
+  const ls = e.target.closest('[data-lsub]'); if (ls) { lgSub = ls.dataset.lsub; return render(); }
+  if (e.target.closest('[data-back]')) {
+    if (hist.length) { const h = hist.pop(); tab = h.tab; detail = h.detail; lg = h.lg; player = h.player; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); return render(); }
+    if (player) player = null; else if (tab === 'leagues' && lg) lg = null; else detail = null;
+    return render();
+  }
   const t = e.target.closest('[data-tab]');
-  if (t) { detail = null; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
+  if (t) { detail = null; lg = null; player = null; hist = []; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
 (async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
-  document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
-  leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (tab === 'matches' || detail) render(); }, 60000); })();
+  document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
+  leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (player || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
