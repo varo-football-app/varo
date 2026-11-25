@@ -278,7 +278,7 @@ function card(m) {
   MM[m.league + '|' + m.id] = m;
   const sc = m.status === 'upcoming' ? '-' : `${m.away.score ?? 0} : ${m.home.score ?? 0}`;
   const goals = m.goals.length ? `<div class="goals">${m.goals.map(g => `<div class="gl" dir="auto">⚽ ${pn(g.pid, g.player, m.league)} <span class="gm">${esc(String(g.minute).replace(/'/g, '').replace(/^/, ''))}'</span></div>`).join('')}</div>` : '';
-  const t = x => `<div class="t"${x.id ? ` data-t="${esc(m.league)}|${esc(x.id)}"` : ''}><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
+  const t = x => `<div class="t"${x.id && !(lgOf(m.league) || {}).src ? ` data-t="${esc(m.league)}|${esc(x.id)}"` : ''}><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
   return `<div class="m ${m.status}" data-m="${esc(m.league)}|${esc(m.id)}">${t(m.home)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${esc(stText(m))}</div></div>${t(m.away)}${goals}</div>`;
 }
 async function typicalXI(slug, tid) {
@@ -325,7 +325,7 @@ async function renderDetail() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   const m = MM[detail.slug + '|' + detail.id]; curSlug = detail.slug;
-  const tid = x => { const mm = m && [m.home, m.away].find(y => y.name === x.name); return mm && mm.id ? mm.id : ''; };
+  const tid = x => { const mm = m && [m.home, m.away].find(y => y.name === x.name); return mm && mm.id && !(lgOf(detail.slug) || {}).src ? mm.id : ''; };
   const t = x => `<div class="t"${tid(x) ? ` data-t="${esc(detail.slug)}|${esc(tid(x))}"` : ''}><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
   const head = (h, a, status, clock) => { const sc = status === 'upcoming' ? '-' : `${a.score ?? 0} : ${h.score ?? 0}`; return `<div class="m ${status}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${status === 'live' ? 'مباشر ' + esc(clock) : status === 'finished' ? 'انتهت' : m ? esc(stText(m)) : 'لم تبدأ'}</div></div>${t(a)}</div>`; };
   const goalsOf = x => x && x.goals && x.goals.length ? x.goals.map(g => `<div class="ev"><span>${esc(g.minute)}</span><span>⚽</span><span>${pn(g.pid, g.player)}${g.own ? ' (ع.م)' : ''}${g.penalty ? ' (ض.ج)' : ''}</span></div>`).join('') : '';
@@ -367,6 +367,7 @@ function drawList() {
   const rows = allDay.filter(d => league === 'all' || d.league.slug === league).map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
   el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
+let grpIdx = 0;
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
 function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx }; history.replaceState(null, '', location.pathname + location.search + '#' + encodeURIComponent(JSON.stringify(o))); }
 (function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; } catch (e) { } })();
@@ -385,13 +386,12 @@ async function renderPlayer() {
     (p.hasStats ? `<div class="tiles">${tiles.map(t => T(...t)).join('')}</div>` : '<div class="empty">المصدر لا يوفر إحصائيات هذا اللاعب في هذه البطولة</div>');
 }
 const rowT = (r, slug) => r.tid && slug ? ` data-t="${esc(slug)}|${esc(r.tid)}"` : '';
-let grpIdx = 0;
 function stGroups(groups, slug) {
   if (grpIdx >= groups.length) grpIdx = 0;
   const sw = groups.length > 1 ? '<div class="gsw">' + groups.map((g, i) => `<button data-grp="${i}" class="${i === grpIdx ? 'on' : ''}">${esc(g.name || 'مجموعة ' + (i + 1))}</button>`).join('') + '</div>' : '';
   return sw + stTable(groups[grpIdx].rows, slug);
 }
-const stTable = (rows, slug) => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
+const stTable = (rows, slug) => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="" onerror="this.style.visibility='hidden'">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
 async function renderLeague() {
   const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   const seg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
