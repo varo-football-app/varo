@@ -72,7 +72,7 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
-<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
+<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'caf.champions', name: 'دوري أبطال أفريقيا' },
@@ -398,7 +398,7 @@ function drawList() {
 let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
 function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx, article }; history.replaceState(null, '', location.pathname + location.search + '#' + encodeURIComponent(JSON.stringify(o))); }
-(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; } catch (e) { } })();
+(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; } catch (e) { } })();
 const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
@@ -459,7 +459,8 @@ async function bracketHTML(slug, ent) {
 async function renderLeague() {
   const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   let ent = []; if (!L.src) { try { ent = await calOf(lg); } catch (e) { } }
-  const seg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].concat(ent.length ? [['br', 'المسار']] : []).map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
+  let noSt = false; if (!L.src && ent.length) { try { const g0 = await api('/api/standings/' + lg); noSt = !g0.length; } catch (e) { } } if (noSt && lgSub === 'st') lgSub = 'br';
+  const seg = `<div class="seg">${(noSt ? [] : [['st', 'الترتيب']]).concat([['sc', 'الهدافون'], ['as', 'صناع الأهداف']]).concat(ent.length ? [['br', 'المسار']] : []).map(x => `<button data-lsub="${x[0]}" class="${lgSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
   const head = back + `<div class="lg" style="font-size:17px;color:var(--tx)">${esc(L.name)}</div>` + seg;
   main.innerHTML = head + '<div class="empty">جاري التحميل...</div>';
   let body = '';
