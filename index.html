@@ -25,8 +25,18 @@ header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6p
 .lrow{display:flex;align-items:center;gap:10px;padding:11px 12px;margin:6px 12px;background:var(--card);border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}.lrow:active{transform:scale(.98)}.lrow svg{margin-inline-start:auto;color:var(--red);transform:rotate(90deg)}
 .seg{display:flex;gap:6px;padding:10px 12px 2px}.seg button{flex:1;background:var(--card);color:var(--tx);border:0;border-radius:12px;padding:9px 4px;font:inherit;font-size:14px;transition:all .25s}.seg button.on{background:var(--red)}
 .ld{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:6px 12px;background:var(--card);border-radius:14px}.ld .rk{width:22px;color:var(--mut);text-align:center;font-weight:700}.ld img{width:26px;height:26px;object-fit:contain}.ld .nm{flex:1;font-size:14px;font-weight:600;line-height:1.3}.ld small{display:block;color:var(--mut);font-weight:400;font-size:12px}.ld .vl{font-size:20px;font-weight:800;color:var(--red);min-width:30px;text-align:center}
-.pc{margin:10px 12px;background:var(--card);border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center}.pc img{width:44px;height:44px;object-fit:contain}.pc h2{margin:0 0 4px;font-size:19px}.pc div{font-size:13px;color:var(--mut);line-height:1.6}
+.pc{margin:10px 12px;background:var(--card);border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center}.pc img{width:44px;height:44px;object-fit:contain}.pc h2{margin:0 0 4px;font-size:19px;color:var(--tx)}.pc div{font-size:13px;color:var(--mut);line-height:1.6}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px}.tile{background:var(--card);border-radius:14px;padding:12px 6px;text-align:center}.tile b{display:block;font-size:22px;color:var(--tx)}.tile.hl b{color:var(--red)}.tile span{font-size:12px;color:var(--mut)}
+
+.pitch{position:relative;margin:8px 12px;padding-top:128%;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#0d2418,#0a1c13);border:1px solid #1f3a2b}
+.pitch svg{position:absolute;inset:0;width:100%;height:100%}
+.pm{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:64px;cursor:pointer;transition:left .6s ease,top .6s ease}
+.pm b{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--red);color:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.pm.aw b{background:#f2f2f5;color:#14141b;border-color:#14141b}
+.pm span{margin-top:3px;font-size:11px;font-weight:600;text-align:center;line-height:1.15;color:#fff;text-shadow:0 1px 3px #000;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pm.sin b{box-shadow:0 0 0 3px rgba(60,200,110,.9),0 2px 8px rgba(0,0,0,.5)}
+.pm i{position:absolute;top:-6px;inset-inline-end:8px;font-style:normal;font-size:10px;background:#2ecc71;color:#06210f;border-radius:8px;padding:0 4px;font-weight:800}
+.sbr{display:flex;align-items:center;gap:8px;padding:8px 2px;border-top:1px solid #20202a;font-size:13px}.sbr .mn{width:36px;color:var(--mut)}.sbr .up{color:#2ecc71}.sbr .dn{color:var(--red)}
 .logo{font-weight:800;font-size:22px;text-align:center;padding-bottom:8px}.logo b{color:var(--red)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
 .chip{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}
@@ -176,13 +186,14 @@ function normalizeSummary(j) {
   const events = (j.keyEvents || []).map(k => ({ minute: k.clock && k.clock.displayValue || '', icon: icon(k.type && (k.type.type || k.type.text)), team: k.team && (names[k.team.id] || k.team.displayName) || '',
     text: (k.shortText || k.text || '').replace(/ (Goal|Substitution|Yellow Card|Red Card)\b/, ''), pid: (k.participants && k.participants[0] && k.participants[0].athlete && k.participants[0].athlete.id) || '' })).filter(e => e.icon);
   const lineups = (j.rosters || []).map(r => {
-    const p = x => ({ id: x.athlete && x.athlete.id || '', jersey: x.jersey || '', name: x.athlete && (x.athlete.displayName || x.athlete.fullName) || '', pos: x.position && x.position.abbreviation || '' });
+    const p = x => ({ place: Number(x.formationPlace) || 0, id: x.athlete && x.athlete.id || '', jersey: x.jersey || '', name: x.athlete && (x.athlete.displayName || x.athlete.fullName) || '', pos: x.position && x.position.abbreviation || '' });
     const list = r.roster || [];
-    return { team: r.team && (r.team.shortDisplayName || r.team.displayName) || '', homeAway: r.homeAway, formation: r.formation || '', starters: list.filter(x => x.starter).map(p), subs: list.filter(x => !x.starter).map(p) };
+    return { teamId: r.team && r.team.id, team: r.team && (r.team.shortDisplayName || r.team.displayName) || '', homeAway: r.homeAway, formation: r.formation || '', starters: list.filter(x => x.starter).map(p), subs: list.filter(x => !x.starter).map(p) };
   });
+  const subEvents = (j.keyEvents || []).filter(k => k.type && k.type.type === 'substitution' && k.participants && k.participants.length >= 2).map(k => ({ teamId: k.team && k.team.id, minute: k.clock && k.clock.displayValue || '', inId: k.participants[0].athlete && k.participants[0].athlete.id, inName: k.participants[0].athlete && k.participants[0].athlete.displayName || '', outId: k.participants[1].athlete && k.participants[1].athlete.id, outName: k.participants[1].athlete && k.participants[1].athlete.displayName || '' }));
   const stats = {}; ((j.boxscore || {}).teams || []).forEach(t => { const o = {}; (t.statistics || []).forEach(x => { o[x.name] = x.displayValue; }); stats[t.homeAway] = o; });
   const st = comp.status && comp.status.type && comp.status.type.state;
-  return { stats, status: st === 'in' ? 'live' : st === 'post' ? 'finished' : 'upcoming', clock: comp.status && comp.status.displayClock || '',
+  return { subEvents, stats, status: st === 'in' ? 'live' : st === 'post' ? 'finished' : 'upcoming', clock: comp.status && comp.status.displayClock || '',
     teams: (comp.competitors || []).map(c => ({ name: c.team && (c.team.shortDisplayName || c.team.displayName), logo: c.team && c.team.logos && c.team.logos[0] && c.team.logos[0].href || '', score: c.score === undefined ? null : Number(c.score), homeAway: c.homeAway })),
     events, lineups };
 }
@@ -266,6 +277,31 @@ async function typicalXI(slug, tid) {
 }
 let curSlug = '';
 const pn = (id, name, slug) => id ? `<a class="pa" data-p="${esc(id)}|${esc(slug || curSlug)}">${esc(name)}</a>` : esc(name);
+function posXY(p) { const a = String(p.pos || '').toUpperCase(); let y = 3, x = 0;
+  if (a === 'G' || a === 'GK') y = 0; else if (/^(CD|CB|SW|RB|LB|RWB|LWB|WB|D)/.test(a)) y = 1; else if (/^(DM|CDM)/.test(a)) y = 2; else if (/^(AM|CAM|RW|LW|SS)/.test(a)) y = 4; else if (/^(F|CF|ST|FW|S)/.test(a)) y = 5; else y = 3;
+  if (/-L$|^L[A-Z]?$|^LB|^LM|^LW|^LWB/.test(a)) x = -1; else if (/-R$|^R[A-Z]?$|^RB|^RM|^RW|^RWB/.test(a)) x = 1; return { y, x }; }
+function pitchHTML(lu, subs, away) {
+  const cnt = String(lu.formation || '').split('-').map(Number).filter(Boolean); let rows = [1, ...cnt];
+  if (rows.reduce((a, b) => a + b, 0) !== lu.starters.length) rows = null;
+  const st = lu.starters.map(p => ({ ...p, q: posXY(p), cur: p, sin: false, mn: '' }));
+  const byId = {}; [...lu.starters, ...lu.subs].forEach(p => { byId[p.id] = p; });
+  subs.forEach(e => { const slot = st.find(x => x.cur.id === e.outId); const inP = byId[e.inId] || { id: e.inId, name: e.inName, jersey: '', pos: '' }; if (slot) { slot.cur = inP; slot.sin = true; slot.mn = e.minute; } });
+  const sorted = [...st].sort((a, b) => a.q.y - b.q.y || a.q.x - b.q.x || a.place - b.place);
+  if (!rows) rows = [1, ...[4, 3, 3].slice(0, 3)];
+  let grouped = [], i = 0; rows.forEach(n => { grouped.push(sorted.slice(i, i + n)); i += n; }); if (i < sorted.length) grouped.push(sorted.slice(i));
+  grouped = grouped.filter(g => g.length); const nR = grouped.length;
+  const lines = '<svg viewBox="0 0 100 128" preserveAspectRatio="none" fill="none" stroke="rgba(255,255,255,.16)" stroke-width=".5"><rect x="3" y="3" width="94" height="122"/><line x1="3" y1="64" x2="97" y2="64"/><circle cx="50" cy="64" r="11"/><rect x="24" y="3" width="52" height="18"/><rect x="38" y="3" width="24" height="7"/><rect x="24" y="107" width="52" height="18"/><rect x="38" y="118" width="24" height="7"/></svg>';
+  const short = n => { const w = String(n || '').trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : w[0] || ''; };
+  const marks = grouped.map((g, ri) => { const y = nR > 1 ? 91 - ri * (80 / (nR - 1)) : 50; return g.map((p, k) => { const x = (k + 1) / (g.length + 1) * 100; const c = p.cur;
+    return `<div class="pm${away ? ' aw' : ''}${p.sin ? ' sin' : ''}" style="left:${x}%;top:${y}%" ${c.id ? `data-p="${esc(c.id)}|${esc(curSlug)}"` : ''}><b>${esc(c.jersey)}</b><span>${esc(short(c.name))}</span>${p.sin ? `<i>⇄ ${esc(p.mn)}</i>` : ''}</div>`; }).join(''); }).join('');
+  return `<div class="pitch">${lines}${marks}</div>`;
+}
+function subsHTML(lu, subs) {
+  const used = new Set(subs.map(e => e.inId));
+  const list = subs.length ? subs.map(e => `<div class="sbr"><span class="mn">${esc(e.minute)}</span><span class="up">⬆ ${pn(e.inId, e.inName)}</span><span class="dn">⬇ ${pn(e.outId, e.outName)}</span></div>`).join('') : '<div class="empty" style="padding:10px">لا توجد تبديلات حتى الآن</div>';
+  const bench = lu.subs.filter(p => !used.has(p.id));
+  return `<div class="lg">${esc(lu.team)}: التبديلات</div><div class="tbl">${list}${bench.length ? '<div class="lg" style="padding:8px 0 2px">على الدكة</div>' + bench.map(plRow).join('') : ''}</div>`;
+}
 const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${pn(p.id, p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
 async function renderDetail() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
@@ -285,7 +321,10 @@ async function renderDetail() {
   if (!ev) ev = status === 'upcoming' ? '' : '<div class="empty">المصدر لا يوفر أحداث هذه المباراة (النتيجة فقط)</div>';
   const official = d && d.lineups.some(l => l.starters.length);
   if (official) {
-    lu = d.lineups.map(l => `<div class="lg">${esc(l.team)} ${l.formation ? '(' + esc(l.formation) + ')' : ''}</div><div class="tbl">${l.starters.map(plRow).join('')}${l.subs.length ? '<div class="lg" style="padding:8px 0 2px">البدلاء</div>' + l.subs.map(plRow).join('') : ''}</div>`).join('');
+    const hl = d.lineups.find(l => l.homeAway === 'home') || d.lineups[0], al = d.lineups.find(l => l.homeAway === 'away') || d.lineups[1];
+    const se = id => (d.subEvents || []).filter(e => String(e.teamId) === String(id));
+    lu = [hl, al].filter(Boolean).map((l, i) => `<div class="lg">${esc(l.team)} ${l.formation ? '(' + esc(l.formation) + ')' : ''}</div>${l.starters.length ? pitchHTML(l, se(l.teamId), i === 1) : ''}`).join('')
+      + '<div class="lg" style="font-size:16px;color:var(--tx)">التبديلات والبدلاء</div>' + [hl, al].filter(Boolean).map(l => subsHTML(l, se(l.teamId))).join('');
   } else if (m && status === 'upcoming' && /^\d+$/.test(detail.id) && lgOf(detail.slug) && !lgOf(detail.slug).src) {
     const res = await Promise.allSettled([m.home, m.away].map(x => typicalXI(detail.slug, x.id)));
     lu = '<div class="empty" style="padding:8px 12px">التشكيل الرسمي لم يُعلن بعد. المعروض: اللاعبون الأكثر مشاركة أساسيًا في آخر مباريات الفريق بنفس البطولة (مش تشكيل رسمي).</div>' + res.map((r, i) => { const nm = [m.home, m.away][i].name; return r.status === 'fulfilled' && r.value.players.length ? `<div class="lg">${esc(nm)} (آخر ${r.value.games} مباريات)</div><div class="tbl">${r.value.players.map(plRow).join('')}</div>` : `<div class="lg">${esc(nm)}</div><div class="empty">لا بيانات كافية</div>`; }).join('');
