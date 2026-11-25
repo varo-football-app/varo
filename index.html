@@ -2,7 +2,14 @@
 <title>ڤارو VARO</title><style>:root{--bg:#0b0b0f;--card:#17171e;--red:#d8232a;--tx:#f2f2f5;--mut:#8b8b99}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,"Segoe UI",Tahoma,sans-serif;max-width:520px;margin-inline:auto;padding-bottom:70px}
 header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6px;border-bottom:1px solid #222}
-body::before{content:'ڤارو VARO';position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:26vw;line-height:1.1;color:rgba(255,255,255,.055);transform:rotate(-15deg);white-space:pre-line;word-break:keep-all;pointer-events:none;z-index:1;overflow:hidden}
+
+.sr{padding:7px 2px}.srh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}.srh span{color:var(--mut)}.bar{display:flex;height:5px;border-radius:3px;overflow:hidden;gap:2px;background:#222}.bar i{background:var(--red);transition:width .6s ease}.bar u{background:#5a5a68;text-decoration:none;transition:width .6s ease}
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#main.fx>*{animation:fup .35s cubic-bezier(.2,.7,.2,1) both}
+#main.fx>*:nth-child(2){animation-delay:.04s}#main.fx>*:nth-child(3){animation-delay:.08s}#main.fx>*:nth-child(4){animation-delay:.12s}#main.fx>*:nth-child(n+5){animation-delay:.16s}
+.chip,.m,nav button,#lsel,.news{transition:background .25s ease,transform .15s ease,opacity .25s ease,border-color .25s ease,color .25s ease}
+.chip:active,.m:active,.news:active{transform:scale(.97)}nav button:active{transform:scale(.92)}#lsel:focus{border-color:var(--red);outline:0}
+@media (prefers-reduced-motion:reduce){#main.fx>*{animation:none}}
 .logo{font-weight:800;font-size:22px;text-align:center;padding-bottom:8px}.logo b{color:var(--red)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
 .chip{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}
@@ -157,8 +164,9 @@ function normalizeSummary(j) {
     const list = r.roster || [];
     return { team: r.team && (r.team.shortDisplayName || r.team.displayName) || '', homeAway: r.homeAway, formation: r.formation || '', starters: list.filter(x => x.starter).map(p), subs: list.filter(x => !x.starter).map(p) };
   });
+  const stats = {}; ((j.boxscore || {}).teams || []).forEach(t => { const o = {}; (t.statistics || []).forEach(x => { o[x.name] = x.displayValue; }); stats[t.homeAway] = o; });
   const st = comp.status && comp.status.type && comp.status.type.state;
-  return { status: st === 'in' ? 'live' : st === 'post' ? 'finished' : 'upcoming', clock: comp.status && comp.status.displayClock || '',
+  return { stats, status: st === 'in' ? 'live' : st === 'post' ? 'finished' : 'upcoming', clock: comp.status && comp.status.displayClock || '',
     teams: (comp.competitors || []).map(c => ({ name: c.team && (c.team.shortDisplayName || c.team.displayName), logo: c.team && c.team.logos && c.team.logos[0] && c.team.logos[0].href || '', score: c.score === undefined ? null : Number(c.score), homeAway: c.homeAway })),
     events, lineups };
 }
@@ -195,6 +203,14 @@ const dayLabel = o => o === 0 ? 'اليوم' : o === -1 ? 'أمس' : o === 1 ? '
 function dayBar() { return '<div class="chips" style="padding:10px 12px 0">' + [-2, -1, 0, 1, 2].map(o => `<button class="chip ${o === dayOff ? 'on' : ''}" data-day="${o}">${dayLabel(o)}</button>`).join('') + '</div>'; }
 let tab = Q.get('tab') || 'matches', league = Q.get('league') || 'all', leagues = [];
 const $ = s => document.querySelector(s), main = $('#main');
+const trCache = (() => { try { return JSON.parse(localStorage.getItem('varo_tr') || '{}'); } catch (e) { return {}; } })();
+const hasAr = t => /[\u0600-\u06FF]/.test(t);
+async function trOne(t) {
+  if (!t || hasAr(t)) return t; if (trCache[t]) return trCache[t];
+  try { const c = new AbortController(); setTimeout(() => c.abort(), 9000); const r = await fetch('https://api.mymemory.translated.net/get?langpair=en|ar&q=' + encodeURIComponent(t.slice(0, 450)), { signal: c.signal }); const j = await r.json(); const x = j.responseData && j.responseData.translatedText; if (j.responseStatus == 200 && x && hasAr(x) && !/MYMEMORY/i.test(x)) { trCache[t] = x; return x; } } catch (e) { }
+  return t;
+}
+async function trItems(items) { const out = await Promise.all(items.map(async n => ({ ...n, title: await trOne(n.title) }))); try { localStorage.setItem('varo_tr', JSON.stringify(trCache)); } catch (e) { } return out; }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const api = apiFetch;
 const stText = m => m.status === 'live' ? `مباشر ${m.clock}` : m.status === 'finished' ? 'انتهت' : new Date(m.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
@@ -239,7 +255,17 @@ async function renderDetail() {
     const res = await Promise.allSettled([m.home, m.away].map(x => typicalXI(detail.slug, x.id)));
     lu = '<div class="empty" style="padding:8px 12px">التشكيل الرسمي لم يُعلن بعد. المعروض: اللاعبون الأكثر مشاركة أساسيًا في آخر مباريات الفريق بنفس البطولة (مش تشكيل رسمي).</div>' + res.map((r, i) => { const nm = [m.home, m.away][i].name; return r.status === 'fulfilled' && r.value.players.length ? `<div class="lg">${esc(nm)} (آخر ${r.value.games} مباريات)</div><div class="tbl">${r.value.players.map(plRow).join('')}</div>` : `<div class="lg">${esc(nm)}</div><div class="empty">لا بيانات كافية</div>`; }).join('');
   } else lu = status === 'upcoming' ? '<div class="empty">التشكيل لم يُعلن بعد</div>' : '<div class="empty">التشكيل غير متاح من المصدر</div>';
-  main.innerHTML = back + head(h, a, status, clock) + (ev ? `<div class="lg">الأحداث</div><div class="tbl">${ev}</div>` : '') + `<div class="lg">التشكيل</div>${lu}`;
+  const SL = [['possessionPct', 'الاستحواذ', '%'], ['totalShots', 'التسديدات', ''], ['shotsOnTarget', 'على المرمى', ''], ['wonCorners', 'الركنيات', ''], ['foulsCommitted', 'الأخطاء', ''], ['offsides', 'التسلل', ''], ['yellowCards', 'بطاقات صفراء', ''], ['redCards', 'بطاقات حمراء', ''], ['saves', 'تصديات', ''], ['totalPasses', 'التمريرات', ''], ['accuratePasses', 'تمريرات صحيحة', ''], ['totalTackles', 'الالتحامات', ''], ['interceptions', 'القطع', '']];
+  let sx = '';
+  if (d && d.stats && d.stats.home && d.stats.away && status !== 'upcoming') {
+    const rows = SL.filter(r => d.stats.home[r[0]] !== undefined && d.stats.away[r[0]] !== undefined).map(r => {
+      const hv = parseFloat(d.stats.home[r[0]]) || 0, av = parseFloat(d.stats.away[r[0]]) || 0, tot = hv + av, hp = tot ? hv / tot * 100 : 50;
+      const f = v => r[2] === '%' ? Math.round(parseFloat(v)) + '%' : v;
+      return `<div class="sr"><div class="srh"><b>${esc(f(d.stats.home[r[0]]))}</b><span>${r[1]}</span><b>${esc(f(d.stats.away[r[0]]))}</b></div><div class="bar"><i style="width:${hp}%"></i><u style="width:${100 - hp}%"></u></div></div>`;
+    });
+    if (rows.length) sx = '<div class="lg">إحصائيات المباراة</div><div class="tbl">' + rows.join('') + '</div>';
+  }
+  main.innerHTML = back + head(h, a, status, clock) + (ev ? `<div class="lg">الأحداث</div><div class="tbl">${ev}</div>` : '') + sx + `<div class="lg">التشكيل</div>${lu}`;
 }
 let lastDay = [], allDay = [], searchQ = '';
 const norm = x => String(x || '').toLowerCase().replace(/[\u064B-\u065F]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
@@ -265,7 +291,7 @@ async function render() {
       const slug = league === 'all' ? 'eng.1' : league; const rows = await api('/api/standings/' + slug);
       main.innerHTML = rows.length ? `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 20).map(r => `<tr><td>${r.rank}</td><td class="n"><img src="${esc(r.logo)}" alt="">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>` : '<div class="empty">الترتيب غير متاح</div>';
     } else {
-      const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; const items = await api('/api/news/' + slug);
+      const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; let items = await api('/api/news/' + slug); fxOn = true; items = await trItems(items);
       main.innerHTML = items.map(n => `<a class="news" href="${esc(n.url)}" target="_blank" rel="noopener"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></a>`).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
     }
   } catch (e) { main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small></div>'; }
@@ -280,14 +306,18 @@ function chips() {
   if (sel.dataset.h !== html) { sel.innerHTML = html; sel.dataset.h = html; }
   sel.value = league;
 }
+let fxOn = false;
+const mainEl = document.getElementById('main');
+new MutationObserver(() => { if (!fxOn || /جاري التحميل/.test(mainEl.textContent)) return; fxOn = false; mainEl.classList.remove('fx'); void mainEl.offsetWidth; mainEl.classList.add('fx'); }).observe(mainEl, { childList: true });
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
+  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab]')) fxOn = true;
   const dd = e.target.closest('[data-day]'); if (dd) { dayOff = Number(dd.dataset.day); return render(); }
   const mm = e.target.closest('[data-m]'); if (mm) { const [slug, id] = mm.dataset.m.split('|'); detail = { slug, id }; scrollTo(0, 0); return render(); }
   if (e.target.closest('[data-back]')) { detail = null; return render(); }
   const t = e.target.closest('[data-tab]');
   if (t) { detail = null; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
-(async () => { const ch = $('#lsel'); $('#lsel').addEventListener('change', e => { detail = null; league = e.target.value; if (tab === 'matches') { drawList(); } else render(); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
+(async () => { const ch = $('#lsel'); $('#lsel').addEventListener('change', e => { fxOn = true; detail = null; league = e.target.value; if (tab === 'matches') { drawList(); } else render(); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
   leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
