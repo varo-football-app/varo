@@ -7,14 +7,23 @@ header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6p
 @keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 #main.fx>*{animation:fup .35s cubic-bezier(.2,.7,.2,1) both}
 #main.fx>*:nth-child(2){animation-delay:.04s}#main.fx>*:nth-child(3){animation-delay:.08s}#main.fx>*:nth-child(4){animation-delay:.12s}#main.fx>*:nth-child(n+5){animation-delay:.16s}
-.chip,.m,nav button,#lsel,.news{transition:background .25s ease,transform .15s ease,opacity .25s ease,border-color .25s ease,color .25s ease}
-.chip:active,.m:active,.news:active{transform:scale(.97)}nav button:active{transform:scale(.92)}#lsel:focus{border-color:var(--red);outline:0}
+.chip,.m,nav button,.news,.ddb,.opt{transition:background .25s ease,transform .15s ease,opacity .25s ease,border-color .25s ease,color .25s ease}
+.chip:active,.m:active,.news:active{transform:scale(.97)}nav button:active{transform:scale(.92)}
 @media (prefers-reduced-motion:reduce){#main.fx>*{animation:none}}
+
+.dd{position:relative;margin:0 12px 10px}
+.ddb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);color:var(--tx);border:1px solid #2a2a35;border-radius:14px;padding:11px 14px;font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.ddb svg{color:var(--red);transition:transform .25s ease;flex:none}.dd.open .ddb{border-color:var(--red)}.dd.open .ddb svg{transform:rotate(180deg)}
+.ddp{position:absolute;top:calc(100% + 6px);inset-inline:0;max-height:min(60vh,420px);overflow-y:auto;background:#14141b;border:1px solid #2a2a35;border-radius:16px;box-shadow:0 14px 34px rgba(0,0,0,.6);padding:6px;z-index:20;opacity:0;transform:translateY(-8px) scale(.98);transform-origin:top;pointer-events:none;visibility:hidden;transition:opacity .2s ease,transform .22s cubic-bezier(.2,.7,.2,1),visibility .2s}
+.dd.open .ddp{opacity:1;transform:none;pointer-events:auto;visibility:visible}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:11px;font-size:15px;cursor:pointer;color:var(--tx)}
+.opt:active{background:#22222c}.opt.on{background:rgba(216,35,42,.16);color:#fff;font-weight:700}
+.opt .ck{width:9px;height:9px;border-radius:50%;background:var(--red);opacity:0;transform:scale(.4);transition:all .2s ease;flex:none}.opt.on .ck{opacity:1;transform:none}
+.opt small{color:var(--mut);font-size:12px;margin-inline-start:auto;padding-inline-start:8px}
 .logo{font-weight:800;font-size:22px;text-align:center;padding-bottom:8px}.logo b{color:var(--red)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
 .chip{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}
 .chip.on{background:var(--red)}
-#lsel{width:calc(100% - 24px);margin:0 12px 10px;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font:inherit;font-size:15px}
 .lg{padding:14px 14px 4px;color:var(--mut);font-size:13px;font-weight:700}
 .m{background:var(--card);margin:8px 12px;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;gap:6px}
 .t{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;text-align:center}
@@ -33,7 +42,7 @@ nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:auto;display:f
 nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px;font:inherit}nav button.on{color:var(--red);font-weight:700}
 .m[data-m]{cursor:pointer}.ev{display:flex;gap:10px;padding:7px 2px;font-size:13px;border-top:1px solid #20202a}.ev span:first-child{color:var(--mut);width:36px}.pl{padding:6px 2px;font-size:14px;border-top:1px solid #20202a}.pl b{display:inline-block;width:26px;color:var(--red)}.pl small{color:var(--mut)}
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
-<body><header><div class="logo"><b>ڤارو</b> VARO</div><select id="lsel"></select></header>
+<body><header><div class="logo"><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
 <script>const LEAGUES = [
@@ -302,9 +311,10 @@ function chips() {
   let opts;
   if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
   else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
-  const sel = $('#lsel'), html = [{ slug: 'all', name: 'كل البطولات' }, ...opts].map(l => `<option value="${l.slug}">${esc(l.name)}</option>`).join('');
-  if (sel.dataset.h !== html) { sel.innerHTML = html; sel.dataset.h = html; }
-  sel.value = league;
+  const sel = $('#lsel'), all = [{ slug: 'all', name: 'كل البطولات' }, ...opts];
+  const html = all.map(l => `<div class="opt${l.slug === league ? ' on' : ''}" role="option" data-v="${l.slug}">${(() => { const m = /^(.*) \((\d+)\)$/.exec(l.name); return m ? `<span>${esc(m[1])}</span><small>${m[2]}</small>` : `<span>${esc(l.name)}</span>`; })()}<i class="ck"></i></div>`).join('');
+  sel.querySelector('.ddp').innerHTML = html;
+  const cur = all.find(l => l.slug === league) || all[0]; sel.querySelector('.ddt').textContent = cur.name.replace(/ \(\d+\)$/, '');
 }
 let fxOn = false;
 const mainEl = document.getElementById('main');
@@ -318,6 +328,8 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-tab]');
   if (t) { detail = null; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
-(async () => { const ch = $('#lsel'); $('#lsel').addEventListener('change', e => { fxOn = true; detail = null; league = e.target.value; if (tab === 'matches') { drawList(); } else render(); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
+(async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
+  dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
+  document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
   leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
