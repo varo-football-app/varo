@@ -69,7 +69,7 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 .cn .sl:nth-child(even)::before{content:'';position:absolute;left:-15px;top:0;height:50%;border-left:2px solid #444452}
 .ci .sl .bm::before{content:'';position:absolute;right:-14px;top:50%;width:14px;border-top:2px solid #444452}
 .art{padding:6px 12px}.art img{width:100%;border-radius:14px;margin-bottom:8px;max-height:260px;object-fit:cover}.art h1{font-size:20px;line-height:1.5;margin:6px 0}.art .meta{color:var(--mut);font-size:12px;margin-bottom:8px}.art .ap{font-size:15px;line-height:1.9;margin:0 0 12px}
-.gp{margin:0 0 6px;border:0;border-top:1px solid #2a2a35;border-bottom:1px solid #2a2a35;border-radius:0;background:#14141b;overflow:hidden}.gh{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-weight:700;cursor:pointer}.gh small{color:var(--mu,#8b8b99);font-weight:400}.gh svg{color:var(--red);transition:transform .25s}.gp.open .gh svg{transform:rotate(180deg)}.gb{display:none;padding:0}.gp.open .gb{display:block}.gb .lrow{margin:0;border-radius:0;border-top:1px solid #1d1d26;background:transparent;padding:14px 16px}.gh{padding:15px 16px!important;font-size:16px}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
+.gp{margin:0 0 6px;border:0;border-top:1px solid #2a2a35;border-bottom:1px solid #2a2a35;border-radius:0;background:#14141b;overflow:hidden}.gh{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-weight:700;cursor:pointer}.gh small{color:var(--mu,#8b8b99);font-weight:400}.gh svg{color:var(--red);transition:transform .25s}.gp.open .gh svg{transform:rotate(180deg)}.gb{display:none;padding:4px 0;background:#0c0c12;border-right:3px solid var(--red);margin-bottom:10px}.gp.open .gb{display:block}.gb .lrow{margin:0;border-radius:0;border-top:1px solid #1a1a24;background:#101018;color:#c9c9d4;padding:9px 14px;font-size:13.5px;font-weight:500}.gh{padding:15px 16px!important;font-size:16px}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button></nav>
@@ -81,10 +81,10 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
   { slug: 'alg.1', name: 'الدوري الجزائري', src: 'tm', tm: 'ALG1' },
   { slug: 'tun.1', name: 'الدوري التونسي', src: 'tm', tm: 'TUN1' },
   { slug: 'irq.1', name: 'الدوري العراقي', src: 'tm', tm: 'IRQ1' },
-  { slug: 'ksa.kings.cup', name: 'كأس خادم الحرمين' },
-  { slug: 'global.gulf_cup', name: 'كأس الخليج العربي' },
+  { slug: 'ksa.kings.cup', name: 'كأس خادم الحرمين الشريفين (السعودية)' },
+  { slug: 'global.gulf_cup', name: 'كأس الخليج العربي (منتخبات)' },
   { slug: 'caf.champions', name: 'دوري أبطال أفريقيا' },
-  { slug: 'caf.confed', name: 'الكونفدرالية الأفريقية' },
+  { slug: 'caf.confed', name: 'كأس الكونفدرالية الأفريقية' },
   { slug: 'uefa.champions', name: 'دوري أبطال أوروبا' },
   { slug: 'uefa.europa', name: 'الدوري الأوروبي' },
   { slug: 'uefa.europa.conf', name: 'المؤتمر الأوروبي' },
@@ -154,11 +154,11 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
   { slug: 'concacaf.champions', name: 'دوري أبطال الكونكاكاف' },
   { slug: 'concacaf.leagues.cup', name: 'كأس الدوريات (Leagues Cup)' },
   { slug: 'campeones.cup', name: 'كأس الأبطال (Campeones Cup)' },
-  { slug: 'afc.asian.cup', name: 'كأس آسيا' },
+  { slug: 'afc.asian.cup', name: 'كأس الأمم الآسيوية' },
   { slug: 'fifa.world', name: 'كأس العالم' },
   { slug: 'fifa.worldq.caf', name: 'تصفيات المونديال أفريقيا' },
   { slug: 'fifa.worldq.uefa', name: 'تصفيات المونديال أوروبا' },
-  { slug: 'caf.nations', name: 'كأس الأمم الأفريقية' },
+  { slug: 'caf.nations', name: 'كأس الأمم الأفريقية (أفكون)' },
   { slug: 'uefa.nations', name: 'دوري الأمم الأوروبية' },
   { slug: 'fifa.friendly', name: 'ودية دولية' },
   { slug: 'fifa.cwc', name: 'كأس العالم للأندية' },
