@@ -6,12 +6,14 @@ header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6p
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
 .chip{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}
 .chip.on{background:var(--red)}
+#lsel{width:calc(100% - 24px);margin:0 12px 10px;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font:inherit;font-size:15px}
 .lg{padding:14px 14px 4px;color:var(--mut);font-size:13px;font-weight:700}
 .m{background:var(--card);margin:8px 12px;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;gap:6px}
 .t{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;text-align:center}
 .t img{width:36px;height:36px;object-fit:contain}
 .sc{text-align:center;font-size:22px;font-weight:800;direction:ltr}.st{font-size:11px;font-weight:600;color:var(--mut)}
 .live .st{color:var(--red)}.live .st:before{content:"● "}
+.gl{padding:2px 0}.gm{color:var(--tx);opacity:.7}
 .goals{grid-column:1/-1;font-size:12px;color:var(--mut);border-top:1px solid #26262f;padding-top:8px}
 table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mut);font-weight:600}td,th{padding:9px 5px;text-align:center}td.n{text-align:right;display:flex;gap:8px;align-items:center}td img{width:20px;height:20px}
 tr+tr{border-top:1px solid #20202a}.pts{font-weight:800;color:var(--red)}
@@ -23,7 +25,7 @@ nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:auto;display:f
 nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px;font:inherit}nav button.on{color:var(--red);font-weight:700}
 .m[data-m]{cursor:pointer}.ev{display:flex;gap:10px;padding:7px 2px;font-size:13px;border-top:1px solid #20202a}.ev span:first-child{color:var(--mut);width:36px}.pl{padding:6px 2px;font-size:14px;border-top:1px solid #20202a}.pl b{display:inline-block;width:26px;color:var(--red)}.pl small{color:var(--mut)}
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
-<body><header><div class="logo"><b>ڤارو</b> VARO</div><div class="chips" id="chips"></div></header>
+<body><header><div class="logo"><b>ڤارو</b> VARO</div><select id="lsel"></select></header>
 <main id="main"></main>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="standings">الترتيب</button><button data-tab="news">الأخبار</button><button data-tab="egypt">المصريين</button></nav>
 <script>const LEAGUES = [
@@ -198,8 +200,8 @@ const stText = m => m.status === 'live' ? `مباشر ${m.clock}` : m.status ===
 const MM = {};
 function card(m) {
   MM[m.league + '|' + m.id] = m;
-  const sc = m.status === 'upcoming' ? '-' : `${m.home.score ?? 0} : ${m.away.score ?? 0}`;
-  const goals = m.goals.length ? `<div class="goals">⚽ ${m.goals.map(g => esc(g.player) + ' ' + esc(g.minute)).join(' • ')}</div>` : '';
+  const sc = m.status === 'upcoming' ? '-' : `${m.away.score ?? 0} : ${m.home.score ?? 0}`;
+  const goals = m.goals.length ? `<div class="goals">${m.goals.map(g => `<div class="gl" dir="auto">⚽ ${esc(g.player)} <span class="gm">${esc(String(g.minute).replace(/'/g, '').replace(/^/, ''))}'</span></div>`).join('')}</div>` : '';
   const t = x => `<div class="t"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
   return `<div class="m ${m.status}" data-m="${esc(m.league)}|${esc(m.id)}">${t(m.home)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${esc(stText(m))}</div></div>${t(m.away)}${goals}</div>`;
 }
@@ -218,7 +220,7 @@ async function renderDetail() {
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   const m = MM[detail.slug + '|' + detail.id];
   const t = x => `<div class="t"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span></div>`;
-  const head = (h, a, status, clock) => { const sc = status === 'upcoming' ? '-' : `${h.score ?? 0} : ${a.score ?? 0}`; return `<div class="m ${status}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${status === 'live' ? 'مباشر ' + esc(clock) : status === 'finished' ? 'انتهت' : m ? esc(stText(m)) : 'لم تبدأ'}</div></div>${t(a)}</div>`; };
+  const head = (h, a, status, clock) => { const sc = status === 'upcoming' ? '-' : `${a.score ?? 0} : ${h.score ?? 0}`; return `<div class="m ${status}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${status === 'live' ? 'مباشر ' + esc(clock) : status === 'finished' ? 'انتهت' : m ? esc(stText(m)) : 'لم تبدأ'}</div></div>${t(a)}</div>`; };
   const goalsOf = x => x && x.goals && x.goals.length ? x.goals.map(g => `<div class="ev"><span>${esc(g.minute)}</span><span>⚽</span><span>${esc(g.player)}${g.own ? ' (ع.م)' : ''}${g.penalty ? ' (ض.ج)' : ''}</span></div>`).join('') : '';
   let d = null;
   try { const l = lgOf(detail.slug); if (l && !l.src && /^\d+$/.test(detail.id)) d = await api('/api/match/' + detail.slug + '/' + detail.id); } catch (e) { d = null; }
@@ -238,11 +240,11 @@ async function renderDetail() {
   } else lu = status === 'upcoming' ? '<div class="empty">التشكيل لم يُعلن بعد</div>' : '<div class="empty">التشكيل غير متاح من المصدر</div>';
   main.innerHTML = back + head(h, a, status, clock) + (ev ? `<div class="lg">الأحداث</div><div class="tbl">${ev}</div>` : '') + `<div class="lg">التشكيل</div>${lu}`;
 }
-let lastDay = [], searchQ = '';
+let lastDay = [], allDay = [], searchQ = '';
 const norm = x => String(x || '').toLowerCase().replace(/[\u064B-\u065F]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
 function drawList() {
   const el = $('#list'); if (!el) return; const q = norm(searchQ);
-  const rows = lastDay.map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
+  const rows = allDay.filter(d => league === 'all' || d.league.slug === league).map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
   el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
 async function render() {
@@ -251,13 +253,13 @@ async function render() {
   try {
     if (tab === 'matches') {
       const target = dayAt(dayOff), ds = [ymd(dayAt(dayOff - 1)), ymd(target)];
-      const one = async d => league === 'all' ? api('/api/matches?date=' + d) : [{ league: leagues.find(l => l.slug === league), matches: await api('/api/matches/' + league + '?date=' + d) }];
+      const one = async d => api('/api/matches?date=' + d);
       const parts = await Promise.all(ds.map(d => one(d).catch(() => [])));
       const byLg = new Map();
       parts.flat().forEach(g => { const e = byLg.get(g.league.slug) || { league: g.league, matches: [], ids: new Set() }; g.matches.forEach(m => { if (!e.ids.has(m.id)) { e.ids.add(m.id); e.matches.push(m); } }); byLg.set(g.league.slug, e); });
       const data = [...byLg.values()].map(e => ({ league: e.league, matches: e.matches.sort((a, b) => new Date(a.date) - new Date(b.date)) }));
       lastDay = data.map(d => ({ league: d.league, matches: d.matches.filter(m => sameDay(m.date, target)) })).filter(d => d.matches.length);
-      main.innerHTML = dayBar() + '<div id="list"></div>'; drawList();
+      allDay = lastDay; chips(); main.innerHTML = dayBar() + '<div id="list"></div>'; drawList();
     } else if (tab === 'standings') {
       const slug = league === 'all' ? 'eng.1' : league; const rows = await api('/api/standings/' + slug);
       main.innerHTML = rows.length ? `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 20).map(r => `<tr><td>${r.rank}</td><td class="n"><img src="${esc(r.logo)}" alt="">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>` : '<div class="empty">الترتيب غير متاح</div>';
@@ -270,17 +272,21 @@ async function render() {
 function chips() {
   const PIN = ['egy.1', 'caf.champions', 'caf.confed', 'uefa.champions', 'uefa.europa', 'uefa.europa.conf'];
   const ordered = [...PIN.map(p => leagues.find(l => l.slug === p)).filter(Boolean), ...leagues.filter(l => !PIN.includes(l.slug))];
-  $('#chips').innerHTML = [{ slug: 'all', name: 'الكل' }, ...ordered].map(l => `<button class="chip ${l.slug === league ? 'on' : ''}" data-l="${l.slug}">${l.name}</button>`).join('');
+  let opts;
+  if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
+  else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
+  const sel = $('#lsel'), html = [{ slug: 'all', name: 'كل البطولات' }, ...opts].map(l => `<option value="${l.slug}">${esc(l.name)}</option>`).join('');
+  if (sel.dataset.h !== html) { sel.innerHTML = html; sel.dataset.h = html; }
+  sel.value = league;
 }
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
   const dd = e.target.closest('[data-day]'); if (dd) { dayOff = Number(dd.dataset.day); return render(); }
   const mm = e.target.closest('[data-m]'); if (mm) { const [slug, id] = mm.dataset.m.split('|'); detail = { slug, id }; scrollTo(0, 0); return render(); }
   if (e.target.closest('[data-back]')) { detail = null; return render(); }
-  const l = e.target.closest('[data-l]'), t = e.target.closest('[data-tab]');
-  if (l) { detail = null; dayOff = dayOff; league = l.dataset.l; chips(); render(); }
-  if (t) { detail = null; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); render(); }
+  const t = e.target.closest('[data-tab]');
+  if (t) { detail = null; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
-(async () => { const ch = $('#chips'); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
+(async () => { const ch = $('#lsel'); $('#lsel').addEventListener('change', e => { detail = null; league = e.target.value; if (tab === 'matches') { drawList(); } else render(); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail) drawList(); });
   leagues = await api('/api/leagues'); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
