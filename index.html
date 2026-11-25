@@ -69,12 +69,20 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 .cn .sl:nth-child(even)::before{content:'';position:absolute;left:-15px;top:0;height:50%;border-left:2px solid #444452}
 .ci .sl .bm::before{content:'';position:absolute;right:-14px;top:50%;width:14px;border-top:2px solid #444452}
 .art{padding:6px 12px}.art img{width:100%;border-radius:14px;margin-bottom:8px;max-height:260px;object-fit:cover}.art h1{font-size:20px;line-height:1.5;margin:6px 0}.art .meta{color:var(--mut);font-size:12px;margin-bottom:8px}.art .ap{font-size:15px;line-height:1.9;margin:0 0 12px}
-</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
+.gp{margin:0 12px 8px;border:1px solid #2a2a35;border-radius:14px;background:#14141b;overflow:hidden}.gh{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-weight:700;cursor:pointer}.gh small{color:var(--mu,#8b8b99);font-weight:400}.gh svg{color:var(--red);transition:transform .25s}.gp.open .gh svg{transform:rotate(180deg)}.gb{display:none;padding:0 6px 6px}.gp.open .gb{display:block}.gb .lrow{margin:0}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
+  { slug: 'uae.1', name: 'دوري المحترفين الإماراتي', src: 'tm', tm: 'UAE1' },
+  { slug: 'qat.1', name: 'دوري نجوم قطر', src: 'tm', tm: 'QSL' },
+  { slug: 'mar.1', name: 'البطولة المغربية (البطولة برو)', src: 'tm', tm: 'MAR1' },
+  { slug: 'alg.1', name: 'الدوري الجزائري', src: 'tm', tm: 'ALG1' },
+  { slug: 'tun.1', name: 'الدوري التونسي', src: 'tm', tm: 'TUN1' },
+  { slug: 'irq.1', name: 'الدوري العراقي', src: 'tm', tm: 'IRQ1' },
+  { slug: 'ksa.kings.cup', name: 'كأس خادم الحرمين' },
+  { slug: 'global.gulf_cup', name: 'كأس الخليج العربي' },
   { slug: 'caf.champions', name: 'دوري أبطال أفريقيا' },
   { slug: 'caf.confed', name: 'الكونفدرالية الأفريقية' },
   { slug: 'uefa.champions', name: 'دوري أبطال أوروبا' },
@@ -219,26 +227,28 @@ const EGY_NEWS=['eng.1','esp.1','fra.1','ger.1','ita.1','tur.1','ksa.1','ned.1',
 const get=async u=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json();};
 const lgOf=s=>LEAGUES.find(l=>l.slug===s);
 async function matchesOf(s,q){const l=lgOf(s);if(!l)throw new Error('bad');
+  if(l.src==='tm')return [];
   if(l.src==='tsdb'){const r=await Promise.allSettled([get(TS+'eventspastleague.php?id='+l.tsdbId),get(TS+'eventsnextleague.php?id='+l.tsdbId)]);return sortMatches(r.flatMap(x=>x.status==='fulfilled'?normalizeTsdbEvents(x.value,s):[]));}
   return sortMatches(normalizeScoreboard(await get(B+'/site/v2/sports/soccer/'+s+'/scoreboard'+(q?'?dates='+q:'')),s));}
 async function newsOf(s){
-  if(s==='egypt-players'||(lgOf(s)&&lgOf(s).src==='tsdb')){const r=await Promise.allSettled(EGY_NEWS.map(newsOf));return filterEgyptNews(r.flatMap(x=>x.status==='fulfilled'?x.value:[]));}
+  if(s==='egypt-players'||(lgOf(s)&&lgOf(s).src==='tsdb')||(lgOf(s)&&lgOf(s).src==='tm')){const r=await Promise.allSettled(EGY_NEWS.map(newsOf));return filterEgyptNews(r.flatMap(x=>x.status==='fulfilled'?x.value:[]));}
   if(!lgOf(s))throw new Error('bad');return normalizeNews(await get(B+'/site/v2/sports/soccer/'+s+'/news?limit=50'));}
 async function standingsOf(s){const l=lgOf(s);if(!l)throw new Error('bad');
+  if(l.src==='tm')return [{name:'',rows:await tmTable(l.tm)}];
   if(l.src==='tsdb'){try{return [{name:'',rows:await tmTable()}];}catch(e){}const r=normalizeTsdbTable(await get(TS+'lookuptable.php?l='+l.tsdbId+'&s=2026-2027'));return r.length?[{name:'',rows:r,partial:1}]:[];}
   return normalizeStandings(await get(B+'/v2/sports/soccer/'+s+'/standings'));}
 const CORE='https://sports.core.api.espn.com/v2/sports/soccer/leagues/',ATH='https://site.web.api.espn.com/apis/common/v3/sports/soccer/athletes/';
 async function leadersOf(slug){
-  if((lgOf(slug)||{}).src){const [g,a]=await Promise.all([tmLeaders('torschuetzenliste/wettbewerb/EGY1'),tmLeaders('assistliste/wettbewerb/EGY1')]);return{year:0,goals:g,assists:a,tm:1};}
+  if((lgOf(slug)||{}).src){const cd=lgOf(slug).tm||'EGY1';const [g,a]=await Promise.all([tmLeaders('torschuetzenliste/wettbewerb/'+cd),tmLeaders('assistliste/wettbewerb/'+cd)]);return{year:0,goals:g,assists:a,tm:1};}
   const j=await get(B+'/site/v2/sports/soccer/'+slug+'/statistics');
   const pick=n=>{const c=(j.stats||[]).find(x=>x.name===n);return c?(c.leaders||[]).slice(0,25).map(l=>{const a=l.athlete||{},t=a.team||{},mt=/Matches:\s*(\d+)/.exec(l.displayValue||'');return{id:a.id||'',name:a.displayName||'',team:t.displayName||'',logo:(t.logos&&t.logos[0]&&t.logos[0].href)||'',value:l.value,matches:mt?mt[1]:''};}):[];};
   return{year:j.season&&j.season.year,goals:pick('goalsLeaders'),assists:pick('assistsLeaders')};
 }
-const TMU='https://www.transfermarkt.com/egyptian-premier-league/';
+const TMU='https://www.transfermarkt.com/x/';
 async function tmDoc(path){const c=new AbortController();setTimeout(()=>c.abort(),15000);const r=await fetch(TMU+path,{signal:c.signal,referrerPolicy:'no-referrer'});if(!r.ok)throw new Error('tm '+r.status);return new DOMParser().parseFromString(await r.text(),'text/html');}
 const tmRows=d=>[...d.querySelectorAll('table.items > tbody > tr')];
 const tx=e=>e?e.textContent.replace(/\s+/g,' ').trim():'';
-async function tmTable(){const d=await tmDoc('tabelle/wettbewerb/EGY1');const rows=tmRows(d).map(r=>{const t=r.children;if(t.length<10)return null;const a=t[2].querySelector('a');const im=t[1].querySelector('img');return{tid:'',rank:parseInt(tx(t[0])),team:tx(a),logo:im?im.getAttribute('src'):'',played:tx(t[3]),won:tx(t[4]),drawn:tx(t[5]),lost:tx(t[6]),gd:tx(t[8]),points:tx(t[9])};}).filter(r=>r&&r.team&&r.rank);if(rows.length<10)throw new Error('tm parse');return rows;}
+async function tmTable(code){const d=await tmDoc('tabelle/wettbewerb/'+(code||'EGY1'));const rows=tmRows(d).map(r=>{const t=r.children;if(t.length<10)return null;const a=t[2].querySelector('a');const im=t[1].querySelector('img');return{tid:'',rank:parseInt(tx(t[0])),team:tx(a),logo:im?im.getAttribute('src'):'',played:tx(t[3]),won:tx(t[4]),drawn:tx(t[5]),lost:tx(t[6]),gd:tx(t[8]),points:tx(t[9])};}).filter(r=>r&&r.team&&r.rank);if(rows.length<10)throw new Error('tm parse');return rows;}
 async function tmLeaders(path){const d=await tmDoc(path);return tmRows(d).map(r=>{const t=r.children;if(t.length<7)return null;const ph=t[1].querySelector('img'),a=t[1].querySelector('td.hauptlink a'),cl=t[4].querySelector('a');let u=ph&&(ph.getAttribute('data-src')||ph.getAttribute('src'))||'';if(/default\.jpg/.test(u)||/^data:/.test(u))u='';return{id:'',name:tx(a),team:cl?cl.getAttribute('title')||'':'',logo:'',photo:u,value:tx(t[t.length-1]),matches:tx(t[5])};}).filter(x=>x&&x.name).slice(0,25);}
 const yrCache={};
 async function clubOf(slug,id){const j=await get(B+'/site/v2/sports/soccer/'+slug+'/teams/'+id+'/schedule');const t=j.team||{};
@@ -484,9 +494,23 @@ async function loadFinished() { try { const c = JSON.parse(localStorage.getItem(
   finished = new Set(r.filter(x => x.status === 'fulfilled' && x.value[1]).map(x => x.value[0])); try { localStorage.setItem('varo_fin', JSON.stringify({ t: Date.now(), l: [...finished] })); } catch (e) { } }
 function leaguesOrdered() { const r = s => { const i = PRIO.indexOf(s); return i < 0 ? 999 : i; }; return leagues.map((l, i) => [l, i]).sort((a, b) => r(a[0].slug) - r(b[0].slug) || a[1] - b[1])
   .map(x => x[0]).filter(l => !finished.has(l.slug) || l.slug === lg); }
+const LGRP = [
+  ['الدوريات العربية', ['egy.1', 'ksa.1', 'uae.1', 'qat.1', 'mar.1', 'alg.1', 'tun.1', 'irq.1']],
+  ['الكؤوس والبطولات العربية والأفريقية', ['ksa.kings.cup', 'global.gulf_cup', 'caf.champions', 'caf.confed', 'caf.nations', 'fifa.worldq.caf']],
+  ['دوريات أوروبا', ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'por.1', 'ned.1', 'tur.1', 'bel.1', 'sco.1', 'gre.1', 'rus.1', 'sui.1', 'aut.1', 'den.1', 'nor.1', 'swe.1', 'cze.1', 'eng.2', 'esp.2', 'ita.2', 'ger.2', 'fra.2']],
+  ['كؤوس أوروبا', ['uefa.champions', 'uefa.europa', 'uefa.europa.conf', 'eng.fa', 'eng.league_cup', 'esp.copa_del_rey', 'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france']],
+  ['المنتخبات والبطولات العالمية', ['fifa.world', 'fifa.worldq.uefa', 'uefa.nations', 'fifa.friendly', 'fifa.cwc']],
+  ['الأمريكتين', ['conmebol.libertadores', 'conmebol.sudamericana', 'bra.1', 'arg.1', 'col.1', 'chi.1', 'uru.1', 'usa.1', 'mex.1']],
+  ['آسيا وباقي العالم', ['afc.champions', 'afc.cup', 'jpn.1', 'chn.1', 'aus.1', 'ind.1', 'rsa.1']]];
+let openG = null;
 function drawLeagues() {
-  const q = norm(searchQ), arr = leaguesOrdered().filter(l => !q || norm(l.name).includes(q));
-  main.innerHTML = '<div class="lg">اختر دوري أو بطولة</div>' + (arr.map(l => `<div class="lrow" data-lg="${l.slug}"><span>${esc(l.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>`).join('') || '<div class="empty">لا نتائج</div>');
+  const q = norm(searchQ), all = leaguesOrdered().filter(l => !q || norm(l.name).includes(q)), used = new Set();
+  const row = l => `<div class="lrow" data-lg="${l.slug}"><span>${esc(l.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>`;
+  const grps = LGRP.map(g => [g[0], g[1].map(s => all.find(l => l.slug === s)).filter(Boolean)]);
+  grps.forEach(g => g[1].forEach(l => used.add(l.slug)));
+  const rest = all.filter(l => !used.has(l.slug)); if (rest.length) grps.push(['أخرى', rest]);
+  const html = grps.filter(g => g[1].length).map((g, i) => `<div class="gp${(q || openG === g[0]) ? ' open' : ''}"><div class="gh" data-g="${esc(g[0])}"><span>${esc(g[0])} <small>(${g[1].length})</small></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="gb">${g[1].map(row).join('')}</div></div>`).join('');
+  main.innerHTML = '<div class="lg">اختر دوري أو بطولة</div>' + (html || '<div class="empty">لا نتائج</div>');
 }
 async function renderClub() {
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
@@ -547,10 +571,10 @@ function chips() {
   if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
   else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
   $('#lsel').style.display = tab === 'leagues' ? 'none' : '';
-  const sel = $('#lsel'), all = [{ slug: 'all', name: 'كل البطولات' }, ...opts];
-  const html = all.map(l => `<div class="opt${l.slug === league ? ' on' : ''}" role="option" data-v="${l.slug}">${(() => { const m = /^(.*) \((\d+)\)$/.exec(l.name); return m ? `<span>${esc(m[1])}</span><small>${m[2]}</small>` : `<span>${esc(l.name)}</span>`; })()}<i class="ck"></i></div>`).join('');
+  const sel = $('#lsel'), all = tab === 'standings' ? opts : [{ slug: 'all', name: 'كل البطولات' }, ...opts]; const effL = tab === 'standings' && league === 'all' ? 'eng.1' : league;
+  const html = all.map(l => `<div class="opt${l.slug === effL ? ' on' : ''}" role="option" data-v="${l.slug}">${(() => { const m = /^(.*) \((\d+)\)$/.exec(l.name); return m ? `<span>${esc(m[1])}</span><small>${m[2]}</small>` : `<span>${esc(l.name)}</span>`; })()}<i class="ck"></i></div>`).join('');
   sel.querySelector('.ddp').innerHTML = html;
-  const cur = all.find(l => l.slug === league) || all[0]; sel.querySelector('.ddt').textContent = cur.name.replace(/ \(\d+\)$/, '');
+  const cur = all.find(l => l.slug === effL) || all[0]; sel.querySelector('.ddt').textContent = cur.name.replace(/ \(\d+\)$/, '');
 }
 let fxOn = false;
 const mainEl = document.getElementById('main');
@@ -565,6 +589,7 @@ document.addEventListener('click', e => {
   const gp = e.target.closest('[data-grp]'); if (gp) { grpIdx = Number(gp.dataset.grp); return render(); }
   const dd = e.target.closest('[data-day]'); if (dd) { dayOff = Number(dd.dataset.day); return render(); }
   const mm = e.target.closest('[data-m]'); if (mm) { const [slug, id] = mm.dataset.m.split('|'); if (club) { hist.push({ tab, detail, lg, player, club }); club = null; } detail = { slug, id }; scrollTo(0, 0); return render(); }
+  const gh = e.target.closest('.gh'); if (gh) { openG = openG === gh.dataset.g ? null : gh.dataset.g; return drawLeagues(); }
   const lr = e.target.closest('[data-lg]'); if (lr) { lg = lr.dataset.lg; lgSub = 'st'; grpIdx = 0; scrollTo(0, 0); return render(); }
   const ls = e.target.closest('[data-lsub]'); if (ls) { lgSub = ls.dataset.lsub; return render(); }
   if (e.target.closest('[data-back]')) {
