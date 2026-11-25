@@ -63,6 +63,12 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 .gsw{display:flex;gap:8px;overflow-x:auto;padding:10px 12px 0;scrollbar-width:none}.gsw button{white-space:nowrap;background:var(--card);color:var(--tx);border:0;border-radius:20px;padding:7px 14px;font:inherit;font-size:14px}.gsw button.on{background:var(--red)}
 [data-t]{cursor:pointer}.cr{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:6px 12px;background:var(--card);border-radius:14px;cursor:pointer;font-size:13px}.cr .dt{width:64px;color:var(--mut);font-size:12px;line-height:1.4}.cr .tm{flex:1;display:flex;align-items:center;gap:6px;font-weight:600}.cr .tm img{width:22px;height:22px;object-fit:contain}.cr .tm.r{justify-content:flex-start}.cr .rs{min-width:46px;text-align:center;font-weight:800;font-size:16px}.cr .cmp{display:block;color:var(--mut);font-size:11px;font-weight:400}
 .br{display:flex;gap:14px;overflow-x:auto;padding:12px;align-items:stretch;scrollbar-width:none}.bc{min-width:158px;display:flex;flex-direction:column;gap:8px;justify-content:space-around}.bc h4{margin:0 0 4px;font-size:13px;color:var(--red);text-align:center}.bm{background:var(--card);border-radius:12px;padding:8px 10px;font-size:12px;position:relative}.bm .r{display:flex;align-items:center;gap:6px;padding:2px 0}.bm img{width:18px;height:18px;object-fit:contain}.bm b{margin-inline-start:auto}.bm.ph0{opacity:.55;text-align:center;border:1px dashed #333;background:0}.bc.fin .bm{border:1px solid var(--red)}.bg{background:var(--card);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:var(--mut)}.bg button{margin-top:8px;background:var(--red);color:#fff;border:0;border-radius:16px;padding:6px 14px;font:inherit;font-size:13px}
+.br{align-items:flex-start;gap:28px!important}.bb{display:flex;flex-direction:column}.sl{flex:1;display:flex;align-items:center;position:relative;padding:3px 0}.sl .bm{width:100%;box-sizing:border-box}
+.cn .sl::after{content:'';position:absolute;left:-14px;top:50%;width:14px;border-top:2px solid #444452}
+.cn .sl:nth-child(odd)::before{content:'';position:absolute;left:-15px;top:50%;height:50%;border-left:2px solid #444452}
+.cn .sl:nth-child(even)::before{content:'';position:absolute;left:-15px;top:0;height:50%;border-left:2px solid #444452}
+.ci .sl .bm::before{content:'';position:absolute;right:-14px;top:50%;width:14px;border-top:2px solid #444452}
+.art{padding:6px 12px}.art img{width:100%;border-radius:14px;margin-bottom:8px;max-height:260px;object-fit:cover}.art h1{font-size:20px;line-height:1.5;margin:6px 0}.art .meta{color:var(--mut);font-size:12px;margin-bottom:8px}.art .ap{font-size:15px;line-height:1.9;margin:0 0 12px}
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
@@ -143,14 +149,14 @@ function normalizeScoreboard(json, league) {
     const goals = (c.details || []).filter(d => d.scoringPlay).map(d => ({
       minute: d.clock && d.clock.displayValue || '', team: d.team && d.team.id,
       player: (d.athletesInvolved || [])[0] && d.athletesInvolved[0].displayName || '', pid: (d.athletesInvolved || [])[0] && d.athletesInvolved[0].id || '', own: !!d.ownGoal, penalty: !!d.penaltyKick }));
-    return { id: ev.id, league, date: ev.date, status: statusOf(ev.status), clock: ev.status && ev.status.displayClock || '',
+    return { id: ev.id, league, sy: ev.season && ev.season.year, date: ev.date, status: statusOf(ev.status), clock: ev.status && ev.status.displayClock || '',
       detail: ev.status && ev.status.type && ev.status.type.shortDetail || '',
       home: { ...side(home), id: home.team && home.team.id }, away: { ...side(away), id: away.team && away.team.id }, goals };
   });
 }
 function normalizeNews(json) {
   return (json.articles || []).map(a => ({ id: a.id || a.dataSourceIdentifier, title: a.headline, summary: a.description || '',
-    image: a.images && a.images[0] && a.images[0].url || '', url: a.links && a.links.web && a.links.web.href || '', published: a.published }));
+    image: a.images && a.images[0] && a.images[0].url || '', url: a.links && a.links.web && a.links.web.href || '', published: a.published, byline: a.byline || '' }));
 }
 function grpName(n, i, tot) { n = String(n || ''); const m = /Group\s+([A-Z0-9]+)/i.exec(n); if (m) return 'المجموعة ' + m[1].toUpperCase(); if (/league phase/i.test(n)) return 'مرحلة الدوري'; if (/knockout|play-?off/i.test(n)) return 'الأدوار الإقصائية'; return tot > 1 ? (n.split(' - ').pop() || 'مجموعة ' + (i + 1)) : ''; }
 function normalizeStandings(json) {
@@ -389,10 +395,10 @@ function drawList() {
   rows.sort((x, y) => x.w - y.w);
   el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
-let grpIdx = 0;
+let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
-function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx }; history.replaceState(null, '', location.pathname + location.search + '#' + encodeURIComponent(JSON.stringify(o))); }
-(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; } catch (e) { } })();
+function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx, article }; history.replaceState(null, '', location.pathname + location.search + '#' + encodeURIComponent(JSON.stringify(o))); }
+(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; } catch (e) { } })();
 const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
@@ -414,20 +420,41 @@ function stGroups(groups, slug) {
   return sw + stTable(groups[grpIdx].rows, slug);
 }
 const stTable = (rows, slug) => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="" onerror="this.style.visibility='hidden'">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
-const PHN = { 'League Phase': 'مرحلة الدوري', 'Group': 'دور المجموعات', 'Group Stage': 'دور المجموعات', 'Groups': 'دور المجموعات', 'Knockout Round Playoffs': 'ملحق الأدوار الإقصائية', 'Rd of 16': 'دور الـ16', 'Round of 16': 'دور الـ16', 'Round of 32': 'دور الـ32', 'Quarterfinals': 'ربع النهائي', 'Semifinals': 'نصف النهائي', 'Final': 'النهائي', 'Finals': 'النهائي', 'Third Place': 'المركز الثالث' };
+const PHN = { 'League Phase': 'مرحلة الدوري', 'Group': 'دور المجموعات', 'Group Stage': 'دور المجموعات', 'Groups': 'دور المجموعات', 'Knockout Round Playoffs': 'ملحق الأدوار الإقصائية', 'Rd of 16': 'دور الـ16', 'Round of 16': 'دور الـ16', 'Round of 32': 'دور الـ32', 'Quarterfinals': 'ربع النهائي', 'Semifinals': 'نصف النهائي', 'Final': 'النهائي', 'Finals': 'النهائي', 'Third Place': 'المركز الثالث', 'First Round': 'الدور الأول', 'Second Round': 'الدور الثاني', 'Third Round': 'الدور الثالث', 'Fourth Round': 'الدور الرابع', 'Fifth Round': 'الدور الخامس', 'Sixth Round': 'الدور السادس', 'Seventh Round': 'الدور السابع', 'Eighth Round': 'الدور الثامن', 'Round of 64': 'دور الـ64' };
 const PHC = { 'ملحق الأدوار الإقصائية': 8, 'دور الـ16': 8, 'دور الـ32': 16, 'ربع النهائي': 4, 'نصف النهائي': 2, 'النهائي': 1 };
-async function calOf(slug) { if (calC[slug]) return calC[slug]; const j = await get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard'); const ent = ((((j.leagues || [])[0] || {}).calendar || [])[0] || {}).entries || []; return calC[slug] = ent.length >= 2 && ent.length <= 12 ? ent : []; }
+async function calOf(slug) { if (calC[slug]) return calC[slug]; const j = await get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard'); const l0 = (j.leagues || [])[0] || {}; calY[slug] = l0.season && l0.season.year; const ent = ((l0.calendar || [])[0] || {}).entries || []; return calC[slug] = ent.length >= 2 && ent.length <= 14 ? ent : []; }
 async function bracketHTML(slug, ent) {
   const yrs = [...new Set(ent.map(e => e.startDate.slice(0, 4)).concat(ent.map(e => e.endDate.slice(0, 4))))];
-  const ev = (await Promise.allSettled(yrs.map(y => get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard?dates=' + y + '&limit=1000')))).flatMap(r => r.status === 'fulfilled' ? normalizeScoreboard(r.value, slug) : []);
-  const ph = ent.filter(e => !/prelim|qualif/i.test(e.label)); const seen = new Set();
-  const cols = ph.map(e => { const nm = PHN[e.label] || e.label, isG = /group|league phase/i.test(e.label), a = Date.parse(e.startDate), b = Date.parse(e.endDate);
-    if (isG) return `<div class="bc"><h4>${esc(nm)}</h4><div class="bg">${esc(new Date(a).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) + ' - ' + new Date(b).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }))}<br><button data-lsub="st">عرض ترتيب المجموعات</button></div></div>`;
+  const cy = calY[slug];
+  const ev = (await Promise.allSettled(yrs.map(y => get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard?dates=' + y + '&limit=1000')))).flatMap(r => r.status === 'fulfilled' ? normalizeScoreboard(r.value, slug) : []).filter(m => !cy || !m.sy || m.sy === cy);
+  const ph = ent.filter(e => !/prelim|qualif|third/i.test(e.label)), isG = e => /group|league phase/i.test(e.label);
+  const gEnt = ph.find(isG), kn = ph.filter(e => !isG(e)), seen = new Set(), tail = kn.slice(-5), cut = kn.length > tail.length;
+  const KEY = t => String(t.id || t.name);
+  const rounds = tail.map(e => { const nm = PHN[e.label] || e.label, a = Date.parse(e.startDate), b = Date.parse(e.endDate);
     const ms = ev.filter(m => { const t = Date.parse(m.date); return t >= a && t <= b && !seen.has(m.id); }); ms.forEach(m => seen.add(m.id)); ms.sort((x, y) => new Date(x.date) - new Date(y.date));
-    const n = PHC[nm] || 2, card = m => { MM[slug + '|' + m.id] = m; const sc = m.status === 'upcoming' ? esc(new Date(m.date).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })) : ''; const r = (x) => `<div class="r"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.name)}</span><b>${m.status === 'upcoming' ? '' : x.score ?? 0}</b></div>`; return `<div class="bm" data-m="${esc(slug)}|${esc(m.id)}" style="cursor:pointer">${r(m.home)}${r(m.away)}${sc ? '<div style="color:var(--mut);font-size:11px;text-align:center">' + sc + '</div>' : ''}</div>`; };
-    const body = ms.length ? ms.map(card).join('') : Array.from({ length: n }, () => '<div class="bm ph0">؟<br>لم يُحدد بعد</div>').join('');
-    return `<div class="bc${nm === 'النهائي' ? ' fin' : ''}"><h4>${nm === 'النهائي' ? '🏆 ' : ''}${esc(nm)}</h4>${body}</div>`; });
-  return '<div class="br">' + cols.join('') + '</div><div class="empty" style="font-size:12px;padding:6px 12px">الأدوار الإقصائية بالذهاب والإياب تظهر كمباراتين منفصلتين. الخانات الفارغة لم تُحدد بعد.</div>';
+    const mp = new Map(); ms.forEach(m => { const k = [KEY(m.home), KEY(m.away)].sort().join('~'); if (!mp.has(k)) mp.set(k, []); mp.get(k).push(m); });
+    return { nm, ties: [...mp.values()] }; });
+  const KN = { 'دور الـ32': 16, 'دور الـ16': 8, 'ربع النهائي': 4, 'نصف النهائي': 2, 'النهائي': 1, 'ملحق الأدوار الإقصائية': 8 };
+  const n = rounds.length, sl = new Array(n);
+  for (let i = n - 1; i >= 0; i--) { sl[i] = i === n - 1 ? (KN[rounds[i].nm] || Math.max(1, rounds[i].ties.length)) : (KN[rounds[i].nm] || sl[i + 1] * 2); }
+  const conn = i => i < n - 1 && sl[i] === sl[i + 1] * 2 && rounds[i].ties.length <= sl[i];
+  const slots = rounds.map((r, i) => { const a = new Array(Math.max(sl[i], r.ties.length)).fill(null); return a; });
+  let top = -1; rounds.forEach((r, i) => { if (r.ties.length) top = i; });
+  const has = (t, tie) => tie.some(m => KEY(m.home) === KEY(t) || KEY(m.away) === KEY(t));
+  if (top >= 0) rounds[top].ties.forEach((t, k) => { slots[top][k] = t; });
+  for (let i = top - 1; i >= 0; i--) { const pool = [...rounds[i].ties]; if (conn(i)) { slots[i + 1].forEach((nt, k) => { if (!nt) return; [nt[0].home, nt[0].away].forEach(tm => { const ix = pool.findIndex(pt => has(tm, pt)); if (ix >= 0) { const pos = [2 * k, 2 * k + 1].find(q => !slots[i][q]); if (pos !== undefined) { slots[i][pos] = pool[ix]; pool.splice(ix, 1); } } }); }); }
+    pool.forEach(t => { const q = slots[i].findIndex(x => !x); if (q >= 0) slots[i][q] = t; }); }
+  for (let i = top + 1; i < n; i++) { rounds[i].ties.forEach((t, k) => { slots[i][k] = t; }); }
+  const H = Math.max(...slots.map(a => a.length), 1) * 66, MAXH = Math.min(H, 66 * 16);
+  const tm = (x, tie) => { const sc = tie.filter(m => m.status !== 'upcoming').map(m => KEY(m.home) === KEY(x) ? m.home.score : m.away.score); return sc; };
+  const tieCard = tie => { tie.sort((a, b) => new Date(a.date) - new Date(b.date)); const f = tie[0], fin = tie.every(m => m.status === 'finished'); MM[slug + '|' + f.id] = f; tie.forEach(m => { MM[slug + '|' + m.id] = m; });
+    const A = tm(f.home, tie), Bs = tm(f.away, tie), sA = A.reduce((x, y) => x + (y || 0), 0), sB = Bs.reduce((x, y) => x + (y || 0), 0), live = tie.find(m => m.status === 'live');
+    const row = (x, sc, win) => `<div class="r"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span${win ? ' style="color:#fff;font-weight:800"' : ''}>${esc(x.name)}</span><b>${sc.join(' · ')}</b></div>`;
+    const nx = tie.find(m => m.status === 'upcoming');
+    return `<div class="bm" data-m="${esc(slug)}|${esc((live || nx || tie[tie.length - 1]).id)}" style="cursor:pointer">${row(f.home, A, fin && sA > sB)}${row(f.away, Bs, fin && sB > sA)}${nx ? '<div style="color:var(--mut);font-size:11px;text-align:center">' + esc(new Date(nx.date).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })) + '</div>' : ''}${live ? '<div style="color:var(--red);font-size:11px;text-align:center">● مباشر</div>' : ''}</div>`; };
+  const gCol = gEnt ? `<div class="bc"><h4>${esc(PHN[gEnt.label] || gEnt.label)}</h4><div class="bb" style="height:${MAXH}px"><div class="bg" style="margin:auto 0">${esc(new Date(gEnt.startDate).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) + ' - ' + new Date(gEnt.endDate).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }))}<br><button data-lsub="st">عرض ترتيب المجموعات</button></div></div></div>` : '';
+  const cols = rounds.map((r, i) => `<div class="bc${conn(i) ? ' cn' : ''}${i > 0 && conn(i - 1) ? ' ci' : ''}${r.nm === 'النهائي' ? ' fin' : ''}"><h4>${r.nm === 'النهائي' ? '🏆 ' : ''}${esc(r.nm)}</h4><div class="bb" style="height:${MAXH}px">${slots[i].map(t => `<div class="sl">${t ? tieCard(t) : '<div class="bm ph0">؟<br>لم يُحدد بعد</div>'}</div>`).join('')}</div></div>`).join('');
+  return '<div class="br">' + gCol + cols + '</div><div class="empty" style="font-size:12px;padding:6px 12px">' + (cut ? 'تظهر آخر 5 أدوار فقط. ' : '') + 'مباريات الذهاب والإياب تُجمع في خانة واحدة. الخانات الفارغة لم تُحدد بعد، وخطوط الربط ترتبط بالمباراة التي تأهل منها الفريق.</div>';
 }
 async function renderLeague() {
   const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
@@ -447,7 +474,7 @@ async function renderLeague() {
   if (lg === L.slug) main.innerHTML = head + body;
 }
 const PRIO = ['egy.1', 'caf.champions', 'caf.confed', 'uefa.champions', 'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.europa', 'uefa.europa.conf', 'ksa.1', 'fifa.world', 'fifa.worldq.caf', 'caf.nations', 'uefa.nations', 'fifa.worldq.uefa', 'fifa.cwc', 'conmebol.libertadores', 'afc.champions', 'por.1', 'ned.1', 'tur.1', 'eng.fa', 'eng.league_cup', 'esp.copa_del_rey', 'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france', 'conmebol.sudamericana', 'bra.1', 'arg.1', 'usa.1', 'eng.2', 'fifa.friendly'];
-let finished = new Set(); const calC = {};
+let finished = new Set(); const calC = {}, calY = {};
 function isFin(j) { const l = (j.leagues || [])[0] || {}, now = Date.now(), se = l.season || {}; if (se.endDate && Date.parse(se.endDate) < now) return true;
   const cal = l.calendar || [], ent = (cal[0] && cal[0].entries) || []; if (ent.length > 1 && ent.every(e => e.endDate && Date.parse(e.endDate) < now)) return true;
   const ev = j.events || []; if (ev.length && ent.length <= 1 && ev.every(e => e.status && e.status.type && e.status.type.state === 'post' && Date.parse(e.date) < now - 30 * 864e5)) return true; return false; }
@@ -473,8 +500,22 @@ async function renderClub() {
   main.innerHTML = back + `<div class="pc">${c.logo ? `<img src="${esc(c.logo)}" alt="">` : ''}<div><h2>${esc(c.name)}</h2><div>مباريات الموسم${L ? ' · ' + esc(L.name) : ''}</div></div></div>` +
     (up.length ? '<div class="lg">القادمة</div>' + up.map(row).join('') : '') + (dn.length ? '<div class="lg">النتائج</div>' + dn.map(row).join('') : '') + (c.matches.length ? '' : '<div class="empty">لا توجد مباريات متاحة من المصدر</div>');
 }
+async function renderArticle() {
+  const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>', it = NW[article.id] || {};
+  main.innerHTML = back + (it.title ? `<div class="art">${it.image ? `<img src="${esc(it.image)}" alt="">` : ''}<h1>${esc(it.title)}</h1></div>` : '') + '<div class="empty">جاري تحميل الخبر...</div>';
+  let h = null; try { const j = await get('https://content.core.api.espn.com/v1/sports/news/' + article.id); h = (j.headlines || [])[0]; } catch (e) { }
+  if (!article) return;
+  if (!h && !it.title) { main.innerHTML = back + '<div class="empty">تعذر تحميل الخبر</div>'; return; }
+  let paras = []; if (h && h.story) { const d = new DOMParser().parseFromString(h.story, 'text/html'); d.querySelectorAll('photo,video,iframe,script,figure,aside,style').forEach(x => x.remove()); paras = [...d.body.querySelectorAll('p,h2,h3,li')].map(e => e.textContent.replace(/\s+/g, ' ').trim()).filter(t => t.length > 1); }
+  const title = it.title || await trOne((h && h.headline) || ''), img = it.image || (h && h.images && h.images[0] && h.images[0].url) || '';
+  const src = (h && h.byline) || it.byline || 'ESPN', pub = (h && h.published) || it.published;
+  const body = paras.length ? paras.map(t => `<p class="ap" dir="auto">${esc(t)}</p>`).join('') : `<p class="ap" dir="auto">${esc((h && h.description) || it.summary || '')}</p><div class="empty" style="font-size:12px">النص الكامل غير متاح، هذا ملخص الخبر</div>`;
+  main.innerHTML = back + `<div class="art">${img ? `<img src="${esc(img)}" alt="">` : ''}<h1>${esc(title)}</h1><div class="meta">المصدر: ${esc(src)} · ESPN${pub ? ' · ' + esc(new Date(pub).toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' })) : ''}</div>${paras.length ? '<button class="chip" id="trb" style="margin:6px 0 10px">ترجمة النص للعربية</button><div class="meta" style="margin-top:-4px">النص الأصلي بالإنجليزية، الترجمة آلية</div>' : ''}<div id="abody">${body}</div></div>`;
+  const tb = document.getElementById('trb'); if (tb) tb.onclick = async () => { tb.disabled = true; tb.textContent = 'جاري الترجمة...'; const els = [...document.querySelectorAll('#abody .ap')]; for (const el of els.slice(0, 14)) { if (!document.body.contains(el)) return; const t = await trOne(el.textContent); el.textContent = t; el.setAttribute('dir', 'auto'); } try { localStorage.setItem('varo_tr', JSON.stringify(trCache)); } catch (e) { } tb.textContent = els.length > 14 ? 'تمت ترجمة أول 14 فقرة' : 'تمت الترجمة'; };
+}
 async function render() {
   try { saveState(); } catch (e) { }
+  if (article) return renderArticle();
   if (player) return renderPlayer();
   if (club) return renderClub();
   if (tab === 'leagues') { if (lg) return renderLeague(); return drawLeagues(); }
@@ -495,7 +536,7 @@ async function render() {
       main.innerHTML = gs.length ? stGroups(gs, slug) : '<div class="empty">الترتيب غير متاح</div>';
     } else {
       const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; let items = await api('/api/news/' + slug); fxOn = true; items = await trItems(items);
-      main.innerHTML = items.map(n => `<a class="news" href="${esc(n.url)}" target="_blank" rel="noopener"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></a>`).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
+      main.innerHTML = items.map(n => { NW[n.id] = n; return `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></div>`; }).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
     }
   } catch (e) { main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small></div>'; }
 }
@@ -513,10 +554,11 @@ function chips() {
 let fxOn = false;
 const mainEl = document.getElementById('main');
 new MutationObserver(() => { if (!fxOn || /جاري التحميل/.test(mainEl.textContent)) return; fxOn = false; mainEl.classList.remove('fx'); void mainEl.offsetWidth; mainEl.classList.add('fx'); }).observe(mainEl, { childList: true });
-document.getElementById('home').addEventListener('click', () => { fxOn = true; tab = 'matches'; detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; dayOff = 0; league = 'all'; searchQ = ''; const q = document.getElementById('q'); if (q) q.value = ''; document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.tab === 'matches')); chips(); scrollTo(0, 0); render(); });
+document.getElementById('home').addEventListener('click', () => { fxOn = true; tab = 'matches'; article = null; detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; dayOff = 0; league = 'all'; searchQ = ''; const q = document.getElementById('q'); if (q) q.value = ''; document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.tab === 'matches')); chips(); scrollTo(0, 0); render(); });
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p],[data-t],[data-grp]')) fxOn = true;
+  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p],[data-t],[data-grp],[data-n]')) fxOn = true;
+  const nw = e.target.closest('[data-n]'); if (nw) { article = { id: nw.dataset.n }; scrollTo(0, 0); return render(); }
   const pa = e.target.closest('[data-p]'); if (pa) { e.stopPropagation(); const [id, slug] = pa.dataset.p.split('|'); hist.push({ tab, detail, lg, player, club }); player = { id, slug }; scrollTo(0, 0); return render(); }
   const tt = e.target.closest('[data-t]'); if (tt) { e.stopPropagation(); const [slug, id] = tt.dataset.t.split('|'); hist.push({ tab, detail, lg, player, club }); player = null; detail = null; club = { slug, id }; scrollTo(0, 0); return render(); }
   const gp = e.target.closest('[data-grp]'); if (gp) { grpIdx = Number(gp.dataset.grp); return render(); }
@@ -525,15 +567,16 @@ document.addEventListener('click', e => {
   const lr = e.target.closest('[data-lg]'); if (lr) { lg = lr.dataset.lg; lgSub = 'st'; grpIdx = 0; scrollTo(0, 0); return render(); }
   const ls = e.target.closest('[data-lsub]'); if (ls) { lgSub = ls.dataset.lsub; return render(); }
   if (e.target.closest('[data-back]')) {
+    if (article) { article = null; return render(); }
     if (hist.length) { const h = hist.pop(); tab = h.tab; detail = h.detail; lg = h.lg; player = h.player; club = h.club || null; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); return render(); }
     if (player) player = null; else if (club) club = null; else if (tab === 'leagues' && lg) lg = null; else detail = null;
     return render();
   }
   const t = e.target.closest('[data-tab]');
-  if (t) { detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
+  if (t) { article = null; detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
 (async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; club = null; player = null; grpIdx = 0; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
   document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171e;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
-  leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
+  leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (article || player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) render(); }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script></body></html>
