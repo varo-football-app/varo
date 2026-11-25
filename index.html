@@ -69,7 +69,7 @@ nav button{flex:1;background:0;border:0;color:var(--mut);padding:14px 2px;font:i
 .cn .sl:nth-child(even)::before{content:'';position:absolute;left:-15px;top:0;height:50%;border-left:2px solid #444452}
 .ci .sl .bm::before{content:'';position:absolute;right:-14px;top:50%;width:14px;border-top:2px solid #444452}
 .art{padding:6px 12px}.art img{width:100%;border-radius:14px;margin-bottom:8px;max-height:260px;object-fit:cover}.art h1{font-size:20px;line-height:1.5;margin:6px 0}.art .meta{color:var(--mut);font-size:12px;margin-bottom:8px}.art .ap{font-size:15px;line-height:1.9;margin:0 0 12px}
-.gp{margin:0 12px 8px;border:1px solid #2a2a35;border-radius:14px;background:#14141b;overflow:hidden}.gh{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-weight:700;cursor:pointer}.gh small{color:var(--mu,#8b8b99);font-weight:400}.gh svg{color:var(--red);transition:transform .25s}.gp.open .gh svg{transform:rotate(180deg)}.gb{display:none;padding:0 6px 6px}.gp.open .gb{display:block}.gb .lrow{margin:0}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
+.gp{margin:0 0 6px;border:0;border-top:1px solid #2a2a35;border-bottom:1px solid #2a2a35;border-radius:0;background:#14141b;overflow:hidden}.gh{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-weight:700;cursor:pointer}.gh small{color:var(--mu,#8b8b99);font-weight:400}.gh svg{color:var(--red);transition:transform .25s}.gp.open .gh svg{transform:rotate(180deg)}.gb{display:none;padding:0}.gp.open .gb{display:block}.gb .lrow{margin:0;border-radius:0;border-top:1px solid #1d1d26;background:transparent;padding:14px 16px}.gh{padding:15px 16px!important;font-size:16px}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button></nav>
@@ -495,13 +495,12 @@ async function loadFinished() { try { const c = JSON.parse(localStorage.getItem(
 function leaguesOrdered() { const r = s => { const i = PRIO.indexOf(s); return i < 0 ? 999 : i; }; return leagues.map((l, i) => [l, i]).sort((a, b) => r(a[0].slug) - r(b[0].slug) || a[1] - b[1])
   .map(x => x[0]).filter(l => !finished.has(l.slug) || l.slug === lg); }
 const LGRP = [
-  ['الدوريات العربية', ['egy.1', 'ksa.1', 'uae.1', 'qat.1', 'mar.1', 'alg.1', 'tun.1', 'irq.1']],
-  ['الكؤوس والبطولات العربية والأفريقية', ['ksa.kings.cup', 'global.gulf_cup', 'caf.champions', 'caf.confed', 'caf.nations', 'fifa.worldq.caf']],
-  ['دوريات أوروبا', ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'por.1', 'ned.1', 'tur.1', 'bel.1', 'sco.1', 'gre.1', 'rus.1', 'sui.1', 'aut.1', 'den.1', 'nor.1', 'swe.1', 'cze.1', 'eng.2', 'esp.2', 'ita.2', 'ger.2', 'fra.2']],
-  ['كؤوس أوروبا', ['uefa.champions', 'uefa.europa', 'uefa.europa.conf', 'eng.fa', 'eng.league_cup', 'esp.copa_del_rey', 'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france']],
-  ['المنتخبات والبطولات العالمية', ['fifa.world', 'fifa.worldq.uefa', 'uefa.nations', 'fifa.friendly', 'fifa.cwc']],
-  ['الأمريكتين', ['conmebol.libertadores', 'conmebol.sudamericana', 'bra.1', 'arg.1', 'col.1', 'chi.1', 'uru.1', 'usa.1', 'mex.1']],
-  ['آسيا وباقي العالم', ['afc.champions', 'afc.cup', 'jpn.1', 'chn.1', 'aus.1', 'ind.1', 'rsa.1']]];
+  ['أفريقيا', ['egy.1', 'mar.1', 'alg.1', 'tun.1', 'rsa.1', 'caf.champions', 'caf.confed', 'caf.nations', 'fifa.worldq.caf']],
+  ['آسيا والخليج', ['ksa.1', 'uae.1', 'qat.1', 'irq.1', 'ksa.kings.cup', 'global.gulf_cup', 'afc.champions', 'afc.cup', 'jpn.1', 'chn.1', 'ind.1', 'aus.1']],
+  ['أوروبا', ['uefa.champions', 'uefa.europa', 'uefa.europa.conf', 'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'por.1', 'ned.1', 'tur.1', 'bel.1', 'sco.1', 'gre.1', 'rus.1', 'sui.1', 'aut.1', 'den.1', 'nor.1', 'swe.1', 'cze.1', 'eng.2', 'esp.2', 'ita.2', 'ger.2', 'fra.2', 'eng.fa', 'eng.league_cup', 'esp.copa_del_rey', 'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france', 'uefa.nations', 'fifa.worldq.uefa']],
+  ['أمريكا الجنوبية', ['conmebol.libertadores', 'conmebol.sudamericana', 'bra.1', 'arg.1', 'col.1', 'chi.1', 'uru.1']],
+  ['أمريكا الشمالية', ['usa.1', 'mex.1']],
+  ['عالمية ومنتخبات', ['fifa.world', 'fifa.cwc', 'fifa.friendly']]];
 let openG = null;
 function drawLeagues() {
   const q = norm(searchQ), all = leaguesOrdered().filter(l => !q || norm(l.name).includes(q)), used = new Set();
@@ -509,7 +508,7 @@ function drawLeagues() {
   const grps = LGRP.map(g => [g[0], g[1].map(s => all.find(l => l.slug === s)).filter(Boolean)]);
   grps.forEach(g => g[1].forEach(l => used.add(l.slug)));
   const rest = all.filter(l => !used.has(l.slug)); if (rest.length) grps.push(['أخرى', rest]);
-  const html = grps.filter(g => g[1].length).map((g, i) => `<div class="gp${(q || openG === g[0]) ? ' open' : ''}"><div class="gh" data-g="${esc(g[0])}"><span>${esc(g[0])} <small>(${g[1].length})</small></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="gb">${g[1].map(row).join('')}</div></div>`).join('');
+  const html = grps.filter(g => g[1].length).map((g, i) => `<div class="gp${(q || openG === g[0]) ? ' open' : ''}"><div class="gh" data-g="${esc(g[0])}"><span>${esc(g[0])}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="gb">${g[1].map(row).join('')}</div></div>`).join('');
   main.innerHTML = '<div class="lg">اختر دوري أو بطولة</div>' + (html || '<div class="empty">لا نتائج</div>');
 }
 async function renderClub() {
