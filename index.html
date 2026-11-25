@@ -293,7 +293,18 @@ async function typicalXI(slug, tid) {
 let curSlug = '';
 const PHF = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#2a2a35"/><circle cx="20" cy="15" r="7" fill="#555566"/><path d="M5 40c0-9 7-14 15-14s15 5 15 14z" fill="#555566"/></svg>');
 const hs = id => id ? 'https://a.espncdn.com/i/headshots/soccer/players/full/' + id + '.png' : '';
-const ph = id => `<img class="ph" loading="lazy" alt="" src="${hs(id)}" onerror="this.onerror=null;this.src=PHF">`;
+const ph = (id, n) => `<img class="ph" loading="lazy" alt="" data-n="${esc(n || '')}" src="${hs(id)}" onerror="phErr(this)">`;
+const phC = (() => { try { return JSON.parse(localStorage.getItem('varo_ph') || '{}'); } catch (e) { return {}; } })();
+const nk = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+let phQ = [], phBusy = false;
+function phFail(img) { if (img.classList.contains('pp')) img.remove(); else { img.onerror = null; img.src = PHF; } }
+function phErr(img) { if (img.dataset.t2 || !img.dataset.n) return phFail(img); img.dataset.t2 = 1; const n = img.dataset.n; if (n in phC) return phC[n] ? (img.src = phC[n]) : phFail(img); phQ.push(img); phRun(); }
+async function phRun() { if (phBusy) return; phBusy = true;
+  while (phQ.length) { const img = phQ.shift(); if (!img.isConnected) continue; const n = img.dataset.n; if (n in phC) { phC[n] ? (img.src = phC[n]) : phFail(img); continue; }
+    let u = ''; try { const j = await (await fetch(TS + 'searchplayers.php?p=' + encodeURIComponent(n))).json(); const q = (j.player || []).find(x => nk(x.strPlayer) === nk(n) && /soccer|football/i.test(x.strSport || 'soccer')); u = q && (q.strCutout || q.strThumb) || ''; } catch (e) { u = null; }
+    if (u !== null) { phC[n] = u; try { localStorage.setItem('varo_ph', JSON.stringify(phC)); } catch (e) { } }
+    u ? (img.src = u) : phFail(img); await new Promise(r => setTimeout(r, 1300)); }
+  phBusy = false; }
 const pn = (id, name, slug) => id ? `<a class="pa" data-p="${esc(id)}|${esc(slug || curSlug)}">${esc(name)}</a>` : esc(name);
 function posXY(p) { const a = String(p.pos || '').toUpperCase(); let y = 3, x = 0;
   if (a === 'G' || a === 'GK') y = 0; else if (/^(CD|CB|SW|RB|LB|RWB|LWB|WB|D)/.test(a)) y = 1; else if (/^(DM|CDM)/.test(a)) y = 2; else if (/^(AM|CAM|RW|LW|SS)/.test(a)) y = 4; else if (/^(F|CF|ST|FW|S)/.test(a)) y = 5; else y = 3;
@@ -311,7 +322,7 @@ function pitchHTML(lu, subs, away) {
   const lines = '<svg viewBox="0 0 100 128" preserveAspectRatio="none" fill="none" stroke="rgba(255,255,255,.16)" stroke-width=".5"><rect x="3" y="3" width="94" height="122"/><line x1="3" y1="64" x2="97" y2="64"/><circle cx="50" cy="64" r="11"/><rect x="24" y="3" width="52" height="18"/><rect x="38" y="3" width="24" height="7"/><rect x="24" y="107" width="52" height="18"/><rect x="38" y="118" width="24" height="7"/></svg>';
   const short = n => { const w = String(n || '').trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : w[0] || ''; };
   const marks = grouped.map((g, ri) => { const y = nR > 1 ? 91 - ri * (80 / (nR - 1)) : 50; return g.map((p, k) => { const x = (k + 1) / (g.length + 1) * 100; const c = p.cur;
-    return `<div class="pm${away ? ' aw' : ''}${p.sin ? ' sin' : ''}" style="left:${x}%;top:${y}%" ${c.id ? `data-p="${esc(c.id)}|${esc(curSlug)}"` : ''}><b>${esc(c.jersey)}${c.id ? `<img class="pp" loading="lazy" alt="" src="${hs(c.id)}" onerror="this.remove()" onload="this.closest('.pm').classList.add('hp')">` : ''}</b><em>${esc(c.jersey)}</em><span>${esc(short(c.name))}</span>${p.sin ? `<i>⇄ ${esc(p.mn)}</i>` : ''}</div>`; }).join(''); }).join('');
+    return `<div class="pm${away ? ' aw' : ''}${p.sin ? ' sin' : ''}" style="left:${x}%;top:${y}%" ${c.id ? `data-p="${esc(c.id)}|${esc(curSlug)}"` : ''}><b>${esc(c.jersey)}${c.id ? `<img class="pp" loading="lazy" alt="" data-n="${esc(c.name)}" src="${hs(c.id)}" onerror="phErr(this)" onload="this.closest('.pm').classList.add('hp')">` : ''}</b><em>${esc(c.jersey)}</em><span>${esc(short(c.name))}</span>${p.sin ? `<i>⇄ ${esc(p.mn)}</i>` : ''}</div>`; }).join(''); }).join('');
   return `<div class="pitch">${lines}${marks}</div>`;
 }
 function subsHTML(lu, subs) {
@@ -320,7 +331,7 @@ function subsHTML(lu, subs) {
   const bench = lu.subs.filter(p => !used.has(p.id));
   return `<div class="lg">${esc(lu.team)}: التبديلات</div><div class="tbl">${list}${bench.length ? '<div class="lg" style="padding:8px 0 2px">على الدكة</div>' + bench.map(plRow).join('') : ''}</div>`;
 }
-const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${p.id ? ph(p.id) : ''}${pn(p.id, p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
+const plRow = p => `<div class="pl"><b>${esc(p.jersey)}</b> ${p.id ? ph(p.id, p.name) : ''}${pn(p.id, p.name)} <small>${esc(p.pos)}${p.n ? ' · ' + p.n + ' مباريات' : ''}</small></div>`;
 async function renderDetail() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
@@ -381,7 +392,7 @@ async function renderPlayer() {
   const tiles = gk ? [['appearances', 'المباريات'], ['minutes', 'الدقائق'], ['saves', 'التصديات', 1], ['cleanSheet', 'شباك نظيفة', 1], ['goalsConceded', 'أهداف دخلت'], ['shotsFaced', 'تسديدات واجهها'], ['yellowCards', 'صفراء'], ['redCards', 'حمراء']]
     : [['appearances', 'المباريات'], ['starts', 'أساسي'], ['minutes', 'الدقائق'], ['totalGoals', 'الأهداف', 1], ['goalAssists', 'التمريرات الحاسمة', 1], ['totalShots', 'التسديدات'], ['shotsOnTarget', 'على المرمى'], ['accuratePasses', 'تمريرات صحيحة'], ['foulsCommitted', 'أخطاء'], ['yellowCards', 'صفراء'], ['redCards', 'حمراء'], ['offsides', 'تسلل']];
   const info = [p.pos, p.jersey ? '#' + p.jersey : '', p.age ? p.age + ' سنة' : '', p.nat, p.height].filter(Boolean).map(esc).join(' • ');
-  main.innerHTML = back + `<div class="pc">${ph(player.id)}${p.teamLogo ? `<img src="${esc(p.teamLogo)}" alt="">` : ''}<div><h2>${esc(p.name || 'لاعب')}</h2><div>${esc(p.team)}</div><div>${info}</div></div></div>` +
+  main.innerHTML = back + `<div class="pc">${ph(player.id, p.name)}${p.teamLogo ? `<img src="${esc(p.teamLogo)}" alt="">` : ''}<div><h2>${esc(p.name || 'لاعب')}</h2><div>${esc(p.team)}</div><div>${info}</div></div></div>` +
     `<div class="lg">إحصائيات الموسم${L ? ' · ' + esc(L.name) : ''} (${p.year}-${String(p.year + 1).slice(2)})</div>` +
     (p.hasStats ? `<div class="tiles">${tiles.map(t => T(...t)).join('')}</div>` : '<div class="empty">المصدر لا يوفر إحصائيات هذا اللاعب في هذه البطولة</div>');
 }
@@ -403,7 +414,7 @@ async function renderLeague() {
     else if (L.src) body = '<div class="empty">المصدر المتاح للدوري المصري لا يوفر الهدافين وصناع الأهداف</div>';
     else {
       const j = await api('/api/leaders/' + lg), arr = lgSub === 'sc' ? j.goals : j.assists;
-      body = arr.length ? arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.id ? ph(x.id) : ''}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
+      body = arr.length ? arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.id ? ph(x.id, x.name) : ''}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
     }
   } catch (e) { body = '<div class="empty">تعذر التحميل، حاول مرة أخرى</div>'; }
   if (lg === L.slug) main.innerHTML = head + body;
