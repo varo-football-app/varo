@@ -326,7 +326,7 @@ const pad = n => String(n).padStart(2, '0');
 const dayAt = o => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + o); return d; };
 const ymd = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 const sameDay = (iso, d) => ymd(new Date(iso)) === ymd(d);
-const dayLabel = o => o === 0 ? 'اليوم' : o === -1 ? 'أمس' : o === 1 ? 'بكرة' : dayAt(o).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'numeric' });
+const dayLabel = o => o === 0 ? 'اليوم' : o === -1 ? 'أمس' : o === 1 ? 'غدا' : dayAt(o).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'numeric' });
 function dayBar() { return '<div class="chips" style="padding:10px 12px 0">' + [-2, -1, 0, 1, 2].map(o => `<button class="chip ${o === dayOff ? 'on' : ''}" data-day="${o}">${dayLabel(o)}</button>`).join('') + '</div>'; }
 let tab = Q.get('tab') || 'matches', league = Q.get('league') || 'all', leagues = [];
 const $ = s => document.querySelector(s), main = $('#main');
