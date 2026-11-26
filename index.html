@@ -104,6 +104,8 @@ body{line-height:1.5}header{padding:16px 16px 6px}.dd{margin:0 16px 10px}.chips{
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button><button data-tab="indoor">الصالات</button><a class="fb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer" aria-label="صفحة ڤارو على فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></a></nav>
 <script>/* ---- settings: language + theme, auto-rotating hero ---- */
 (function () {
+  try { if (!location.search && !location.hash) { const q = new URLSearchParams(), dt = localStorage.getItem('varoTab'), dl = localStorage.getItem('varoLeague'); if (dt && dt !== 'matches') q.set('tab', dt); if (dl && dl !== 'all') q.set('league', dl); if ([...q].length) history.replaceState(null, '', '?' + q); } } catch (e) { }
+  document.documentElement.dataset.fs = localStorage.getItem('varoFs') || 'm';
   const L = localStorage.getItem('varoLang') === 'en' ? 'en' : 'ar';
   const D = {
     'المباريات القادمة': 'Upcoming matches', 'لا توجد مباريات متاحة في الأيام القريبة': 'No matches available in the coming days', 'لا توجد مباريات متاحة من المصدر': 'No matches available from the source',
@@ -177,6 +179,8 @@ html[data-theme=light] .bm,html[data-theme=light] .bg,html[data-theme=light] .tb
 #setp .op{display:flex;gap:10px}#setp .op button{flex:1;background:var(--bg);color:var(--tx);border:2px solid transparent;border-radius:14px;padding:13px 6px;font:inherit;font-size:16px;cursor:pointer}
 #setp .op button.on{border-color:var(--red);font-weight:700}
 #setp .cl{width:100%;background:var(--red);color:#fff;border:0;border-radius:14px;padding:13px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+html[data-fs=s] #main{zoom:.9}html[data-fs=l] #main{zoom:1.12}html[data-fs=xl] #main{zoom:1.25}
+#setp .sh{max-height:90vh;overflow:auto}#setp select{width:100%;background:var(--bg);color:var(--tx);border:2px solid transparent;border-radius:14px;padding:13px;font:inherit;font-size:16px}#setp .ab{display:flex;flex-direction:column;gap:10px}#setp .ab button{background:var(--bg);color:var(--tx);border:0;border-radius:14px;padding:13px;font:inherit;font-size:16px;cursor:pointer}#setp .ab button.dg{color:#ff6b6b}
 #setp small{display:block;color:var(--mut);font-size:12px;margin:0 0 16px;line-height:1.5}`;
   document.head.appendChild(css);
   const build = () => {
@@ -188,13 +192,31 @@ html[data-theme=light] .bm,html[data-theme=light] .bg,html[data-theme=light] .tb
     const p = document.createElement('div'); p.id = 'setp';
     const th = localStorage.getItem('varoTheme') || 'dark';
     const T = L === 'en' ? { h: 'Settings', l: 'Language', t: 'Theme', d: 'Dark', li: 'Light', a: 'Auto (device)', c: 'Done', n: 'The interface language changes. News articles and team names stay in their source language.' } : { h: 'الإعدادات', l: 'اللغة', t: 'المظهر', d: 'داكن', li: 'فاتح', a: 'تلقائي (حسب الجهاز)', c: 'تم', n: 'لغة الواجهة هي التي تتغير. نصوص الأخبار وأسماء الفرق تبقى بلغتها الأصلية.' };
-    p.innerHTML = `<div class="sh" role="dialog"><h3>${T.h}</h3><div class="gr"><b>${T.l}</b><div class="op"><button data-lang="ar" class="${L === 'ar' ? 'on' : ''}">العربية</button><button data-lang="en" class="${L === 'en' ? 'on' : ''}">English</button></div></div><div class="gr"><b>${T.t}</b><div class="op"><button data-theme="dark" class="${th === 'dark' ? 'on' : ''}">${T.d}</button><button data-theme="light" class="${th === 'light' ? 'on' : ''}">${T.li}</button><button data-theme="auto" class="${th === 'auto' ? 'on' : ''}">${T.a}</button></div></div><small>${T.n}</small><button class="cl">${T.c}</button></div>`;
+    const fsv = localStorage.getItem('varoFs') || 'm', dtv = localStorage.getItem('varoTab') || 'matches', dlv = localStorage.getItem('varoLeague') || 'all';
+    const E = L === 'en';
+    const grp = (h, body) => `<div class="gr"><b>${h}</b>${body}</div>`;
+    const ops = (attr, cur, arr) => `<div class="op" style="flex-wrap:wrap">${arr.map(a => `<button data-${attr}="${a[0]}" class="${cur === a[0] ? 'on' : ''}">${a[1]}</button>`).join('')}</div>`;
+    const lgs = (typeof LEAGUES !== 'undefined' ? LEAGUES : []);
+    const X = {
+      fs: grp(E ? 'Text size' : 'حجم الخط', ops('fs', fsv, [['s', E ? 'Small' : 'صغير'], ['m', E ? 'Normal' : 'عادي'], ['l', E ? 'Large' : 'كبير'], ['xl', E ? 'Extra' : 'كبير جدا']])),
+      tab: grp(E ? 'Opening screen' : 'الشاشة الافتتاحية', ops('dtab', dtv, [['matches', E ? 'Matches' : 'المباريات'], ['news', E ? 'News' : 'الأخبار'], ['standings', E ? 'Standings' : 'الترتيب'], ['leagues', E ? 'Competitions' : 'المسابقات']])),
+      lg: grp(E ? 'Favorite competition (opens with it)' : 'بطولتي المفضلة (تفتح بها)', `<select id="favlg"><option value="all">${E ? 'All competitions' : 'كل البطولات'}</option>${lgs.map(l => `<option value="${l.slug}" ${dlv === l.slug ? 'selected' : ''}>${l.name.replace(/ \(\d+\)$/, '')}</option>`).join('')}</select>`),
+      ac: `<div class="gr ab"><button data-act="notif">${E ? 'Notification settings' : 'إعدادات الإشعارات'}</button><button data-act="clear">${E ? 'Clear cache and reload' : 'مسح الذاكرة المؤقتة وإعادة التحميل'}</button><button data-act="reset" class="dg">${E ? 'Reset all settings' : 'إعادة ضبط كل الإعدادات'}</button></div>`,
+      ab: E ? 'VARO: live scores, news and standings. Data comes from public sports sources. Settings are saved on this device only.' : 'ڤارو: نتائج مباشرة وأخبار وترتيب. البيانات من مصادر رياضية عامة. الإعدادات محفوظة على هذا الجهاز فقط.'
+    };
+    p.innerHTML = `<div class="sh" role="dialog"><h3>${T.h}</h3><div class="gr"><b>${T.l}</b><div class="op"><button data-lang="ar" class="${L === 'ar' ? 'on' : ''}">العربية</button><button data-lang="en" class="${L === 'en' ? 'on' : ''}">English</button></div></div><div class="gr"><b>${T.t}</b><div class="op"><button data-theme="dark" class="${th === 'dark' ? 'on' : ''}">${T.d}</button><button data-theme="light" class="${th === 'light' ? 'on' : ''}">${T.li}</button><button data-theme="auto" class="${th === 'auto' ? 'on' : ''}">${T.a}</button></div></div>${X.fs}${X.tab}${X.lg}${X.ac}<small>${T.n}</small><small>${X.ab}</small><button class="cl">${T.c}</button></div>`;
     document.body.appendChild(p);
     g.onclick = () => p.classList.add('on');
+    p.onchange = e => { if (e.target.id === 'favlg') localStorage.setItem('varoLeague', e.target.value); };
     p.onclick = e => {
       if (e.target === p || e.target.closest('.cl')) return p.classList.remove('on');
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.lang) { localStorage.setItem('varoLang', b.dataset.lang); location.reload(); }
+      if (b.dataset.fs) { localStorage.setItem('varoFs', b.dataset.fs); document.documentElement.dataset.fs = b.dataset.fs; p.querySelectorAll('[data-fs]').forEach(x => x.classList.toggle('on', x === b)); }
+      if (b.dataset.dtab) { localStorage.setItem('varoTab', b.dataset.dtab); p.querySelectorAll('[data-dtab]').forEach(x => x.classList.toggle('on', x === b)); }
+      if (b.dataset.act === 'notif') { p.classList.remove('on'); const bl = document.getElementById('bell'); if (bl) bl.click(); }
+      if (b.dataset.act === 'clear') { (async () => { try { for (const k of await caches.keys()) await caches.delete(k); } catch (e) { } ['varo_tr', 'varoInbox', 'varoNState', 'varoNUnread'].forEach(k => localStorage.removeItem(k)); location.reload(); })(); }
+      if (b.dataset.act === 'reset') { ['varoLang', 'varoTheme', 'varoFs', 'varoTab', 'varoLeague', 'varoNotif', 'varo_tr', 'varoInbox', 'varoNState', 'varoNUnread'].forEach(k => localStorage.removeItem(k)); location.reload(); }
       if (b.dataset.theme) { localStorage.setItem('varoTheme', b.dataset.theme); applyTheme(); p.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('on', x === b)); }
     };
   };
@@ -206,14 +228,21 @@ html[data-theme=light] .bm,html[data-theme=light] .bg,html[data-theme=light] .tb
     document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
     document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
     document.addEventListener('wheel', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
-    setInterval(() => {
-      if (document.hidden || Date.now() < hold) return;
+    let anim = 0;
+    const step = () => {
+      if (document.hidden || Date.now() < hold || anim) return;
       const hs = document.querySelector('#hn .hs'); if (!hs) return; const cs = [...hs.querySelectorAll('.hc')]; if (cs.length < 2) return;
       const r = hs.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-      const mid = r.left + r.width / 2; let cur = 0, best = 1e9; cs.forEach((c, i) => { const q = c.getBoundingClientRect(), d = Math.abs(q.left + q.width / 2 - mid); if (d < best) { best = d; cur = i; } });
-      const nx = cs[(cur + 1) % cs.length].getBoundingClientRect();
-      hs.scrollBy({ left: nx.left + nx.width / 2 - mid, behavior: 'smooth' });
-    }, 3000);
+      const mid = r.left + r.width / 2; let cur = 0, best = 1e9;
+      cs.forEach((c, i) => { const q = c.getBoundingClientRect(), d = Math.abs(q.left + q.width / 2 - mid); if (d < best) { best = d; cur = i; } });
+      const nq = cs[(cur + 1) % cs.length].getBoundingClientRect();
+      const from = hs.scrollLeft, to = from + (nq.left + nq.width / 2 - mid), t0 = performance.now(), dur = 450;
+      anim = 1; const snap = hs.style.scrollSnapType; hs.style.scrollSnapType = 'none';
+      const f = now => { const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; hs.scrollLeft = from + (to - from) * e;
+        if (k < 1 && Date.now() >= hold) requestAnimationFrame(f); else { hs.style.scrollSnapType = snap; anim = 0; } };
+      requestAnimationFrame(f);
+    };
+    setInterval(step, 3000);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
@@ -988,8 +1017,8 @@ function sheet(){
   const inb=inbox().slice(0,15);
   p.innerHTML=`<div class="sh" role="dialog"><h3>${t('الإشعارات','Notifications')}</h3>`+
   rows.map(r=>`<div class="rw"><span>${r[1]}</span><button class="sw ${s[r[0]]?'on':''}" data-k="${r[0]}" aria-label="${r[1]}"></button></div>`).join('')+
-  `<h4>${t('متابعة البطولات','Follow competitions')}</h4><div class="ch">`+lg.map(l=>`<button data-lg="${l.slug}" class="${s.leagues.includes(l.slug)?'on':''}">${l.name.replace(/ \(\d+\)$/,'')}</button>`).join('')+`</div>`+
-  (teams.length?`<h4>${t('متابعة الفرق (من مباريات اليوم)','Follow teams (from today\'s matches)')}</h4><div class="ch">`+teams.map(n=>`<button data-tm="${n.replace(/"/g,'&quot;')}" class="${s.teams.includes(n)?'on':''}">${n}</button>`).join('')+`</div>`:'')+
+  `<h4>${t('متابعة البطولات','Follow competitions')}</h4><div class="ch">`+lg.map(l=>`<button data-nlg="${l.slug}" class="${s.leagues.includes(l.slug)?'on':''}">${l.name.replace(/ \(\d+\)$/,'')}</button>`).join('')+`</div>`+
+  (teams.length?`<h4>${t('متابعة الفرق (من مباريات اليوم)','Follow teams (from today\'s matches)')}</h4><div class="ch">`+teams.map(n=>`<button data-ntm="${n.replace(/"/g,'&quot;')}" class="${s.teams.includes(n)?'on':''}">${n}</button>`).join('')+`</div>`:'')+
   `<h4>${t('آخر الإشعارات','Recent')}</h4>`+(inb.length?inb.map(i=>`<div class="it">${i.title}<small>${i.body} · ${new Date(i.t).toLocaleTimeString(EN?'en-US':'ar-EG',{hour:'2-digit',minute:'2-digit'})}</small></div>`).join(''):`<div class="it"><small>${t('لا توجد إشعارات بعد','No notifications yet')}</small></div>`)+
   `<div class="nt">${t('الإشعارات تعمل أثناء فتح التطبيق أو تشغيله في الخلفية. لا يمكن إرسال إشعارات والتطبيق مغلق تماما بدون خادم. على الآيفون يجب إضافة التطبيق للشاشة الرئيسية.','Alerts work while the app is open or running in the background. Alerts with the app fully closed need a server and are not available yet. On iPhone, add the app to your Home Screen first.')}${perm==='denied'?'<br><b>'+t('الإشعارات محظورة من إعدادات المتصفح.','Notifications are blocked in your browser settings.')+'</b>':''}${perm==='unsupported'?'<br><b>'+t('هذا المتصفح لا يدعم إشعارات النظام، ستظهر الإشعارات داخل التطبيق فقط.','This browser has no system notifications; alerts show inside the app only.')+'</b>':''}</div><button class="cl">${t('تم','Done')}</button></div>`;
 }
@@ -1009,8 +1038,8 @@ async function build(){
         s.on=true;save(s);poll();
       }else s[k]=!s[k];
       save(s)}
-    if(x.dataset.lg){const i=s.leagues.indexOf(x.dataset.lg);i<0?s.leagues.push(x.dataset.lg):s.leagues.splice(i,1);save(s)}
-    if(x.dataset.tm){const i=s.teams.indexOf(x.dataset.tm);i<0?s.teams.push(x.dataset.tm):s.teams.splice(i,1);save(s)}
+    if(x.dataset.nlg){const i=s.leagues.indexOf(x.dataset.nlg);i<0?s.leagues.push(x.dataset.nlg):s.leagues.splice(i,1);save(s)}
+    if(x.dataset.ntm){const i=s.teams.indexOf(x.dataset.ntm);i<0?s.teams.push(x.dataset.ntm):s.teams.splice(i,1);save(s)}
     sheet();
   };
   badge();
