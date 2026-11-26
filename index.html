@@ -137,7 +137,7 @@ body{line-height:1.5}header{padding:16px 16px 6px}.dd{margin:0 16px 10px}.chips{
     'الدوري البرتغالي': 'Portuguese League', 'الدوري الهولندي': 'Eredivisie', 'الدوري التركي': 'Turkish Super Lig', 'الدوري البرازيلي': 'Brazilian Serie A', 'الدوري الأرجنتيني': 'Argentine League', 'الدوري الكولومبي': 'Colombian League', 'الدوري المكسيكي': 'Liga MX', 'الدوري الأمريكي MLS': 'MLS',
     'كأس الاتحاد الإنجليزي': 'FA Cup', 'كأس الرابطة': 'League Cup', 'كأس ملك إسبانيا': 'Copa del Rey', 'كأس إيطاليا': 'Coppa Italia', 'كأس ألمانيا': 'DFB-Pokal', 'كأس فرنسا': 'Coupe de France', 'كوبا ليبرتادوريس': 'Copa Libertadores', 'ودية دولية': 'International friendly', 'كأس بوليفيا': 'Bolivian Cup',
     'الأهلي': 'Al Ahly', 'سموحة': 'Smouha', 'الجزيرة': 'Gezira', 'سبورتنج': 'Sporting', 'هليوبوليس': 'Heliopolis', 'مصر': 'Egypt',
-    'ڤارو': 'VARO', 'آخر': 'Latest', 'أخرى': 'Other', 'لاعب': 'Player', 'مباراة': 'Match', 'مباريات': 'Matches'
+    'ڤارو': '', 'آخر': 'Latest', 'أخرى': 'Other', 'لاعب': 'Player', 'مباراة': 'Match', 'مباريات': 'Matches'
   };
   const keys = Object.keys(D).sort((a, b) => b.length - a.length);
   window.LOC = L === 'en' ? 'en-US' : 'ar-EG';
@@ -159,7 +159,7 @@ body{line-height:1.5}header{padding:16px 16px 6px}.dd{margin:0 16px 10px}.chips{
 html[data-theme=light]{--bg:#f3f4f8;--card:#fff;--tx:#1b1c24;--mut:#6b6d7b}
 html[data-theme=light] header{border-bottom-color:#dcdde6}
 html[data-theme=light] nav{background:#fff;border-top-color:#dcdde6}
-html[data-theme=light] .ddb,html[data-theme=light] input#q{background:#fff;border-color:#d4d6e0;color:var(--tx)}
+html[data-theme=light] .ddb,html[data-theme=light] #q,html[data-theme=light] input{background:#fff!important;border:1px solid #d4d6e0!important;color:#1b1c24!important}.hc,.hc span{color:#fff!important}
 html[data-theme=light] .ddp{background:#fff;border-color:#d4d6e0;box-shadow:0 14px 34px rgba(0,0,0,.15)}
 html[data-theme=light] .m{box-shadow:0 1px 3px rgba(20,20,40,.12)}
 html[data-theme=light] .goals,html[data-theme=light] .ev,html[data-theme=light] .sbr,html[data-theme=light] .pl,html[data-theme=light] .evr{border-color:#e3e4ec}
