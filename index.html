@@ -468,9 +468,19 @@ function drawList() {
 }
 let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
-function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL }; const k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k); if (window.NOPUSH || !history.state || history.state.k === k) history.replaceState({ k, o }, '', u); else history.pushState({ k, o }, '', u); }
-addEventListener('popstate', e => { const o = e.state && e.state.o; if (!o) return; tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; hist = []; fxOn = true; scrollTo(0, 0); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); try { chips(); } catch (x) { } window.NOPUSH = true; try { render(); } finally { window.NOPUSH = false; } });
+const curO = () => ({ tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL, d: dayOff });
+function saveState() { const o = curO(), k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k), cs = history.state || {};
+  if (window.NOPUSH || !history.state || cs.k === k) history.replaceState({ k, o, i: cs.i || 0, y: cs.y || 0, ov: cs.ov }, '', u);
+  else if (cs.ov) history.replaceState({ k, o, i: cs.i || 0, y: 0 }, '', u);
+  else { history.replaceState({ ...cs, y: scrollY }, ''); history.pushState({ k, o, i: (cs.i || 0) + 1, y: 0 }, '', u); } }
+function closeOv() { const d = document.querySelector('.dd.open'); if (d) d.classList.remove('open'); if (history.state && history.state.ov) history.back(); }
+function openOv() { const cs = history.state || {}; if (!cs.ov) { history.replaceState({ ...cs, y: scrollY }, ''); history.pushState({ ...cs, ov: 1, i: (cs.i || 0) + 1 }, ''); } }
+addEventListener('popstate', e => { const st = e.state, o = st && st.o; const d = document.querySelector('.dd.open'); if (d) d.classList.remove('open'); if (!o) return;
+  if (JSON.stringify(curO()) === st.k) { return; }
+  tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; dayOff = o.d || 0; hist = []; fxOn = true;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); try { chips(); } catch (x) { } window.NOPUSH = true; let pr; try { pr = render(); } finally { window.NOPUSH = false; } Promise.resolve(pr).then(() => setTimeout(() => scrollTo(0, st.y || 0), 60)); });
 (function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; } catch (e) { } })();
+(function () { if (history.state) return; if (tab !== 'matches' || league !== 'all' || article || detail || player || club || lg || window.SHOWALL) { const r = { tab: 'matches', league: 'all', lg: null, lgSub: 'st', detail: null, player: null, club: null, grpIdx: 0, article: null, sa: false, d: 0 }; history.replaceState({ k: JSON.stringify(r), o: r, i: 0, y: 0 }, '', location.pathname + location.search); } })();
 const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
@@ -658,6 +668,7 @@ document.addEventListener('click', e => {
   const lr = e.target.closest('[data-lg]'); if (lr) { lg = lr.dataset.lg; lgSub = 'st'; grpIdx = 0; scrollTo(0, 0); return render(); }
   const ls = e.target.closest('[data-lsub]'); if (ls) { lgSub = ls.dataset.lsub; return render(); }
   if (e.target.closest('[data-back]')) {
+    if (history.state && history.state.i > 0 && !history.state.ov) { history.back(); return; }
     if (window.SHOWALL) { window.SHOWALL = false; scrollTo(0, 0); return render(); }
     if (article) { article = null; return render(); }
     if (hist.length) { const h = hist.pop(); tab = h.tab; detail = h.detail; lg = h.lg; player = h.player; club = h.club || null; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); return render(); }
@@ -667,9 +678,9 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-tab]');
   if (t) { window.SHOWALL = false; article = null; detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; tab = t.dataset.tab; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === t)); chips(); render(); }
 });
-(async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
-  dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; club = null; player = null; grpIdx = 0; league = o.dataset.v; dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
-  document.addEventListener('click', e => { if (!dd.contains(e.target)) dd.classList.remove('open'); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #383a4b;background:#262836;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
+(async () => { const ch = $('#lsel'); const dd = $('#lsel'); dd.querySelector('.ddb').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); if (dd.classList.contains('open')) openOv(); else closeOv(); });
+  dd.querySelector('.ddp').addEventListener('click', e => { const o = e.target.closest('.opt'); if (!o) return; e.stopPropagation(); fxOn = true; detail = null; club = null; player = null; grpIdx = 0; league = o.dataset.v; try { saveState(); } catch (x) { } dd.classList.remove('open'); chips(); if (tab === 'matches') { drawList(); } else render(); });
+  document.addEventListener('click', e => { if (!dd.contains(e.target) && dd.classList.contains('open')) closeOv(); }); const box = document.createElement('div'); box.style.cssText = 'padding:8px 12px 0'; box.innerHTML = '<input id="q" type="search" placeholder="ابحث عن فريق أو دوري..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #383a4b;background:#262836;color:#f2f2f5;font-size:15px">'; ch.parentNode.insertBefore(box, ch.nextSibling); $('#q').addEventListener('input', e => { searchQ = e.target.value; if (tab === 'matches' && !detail && !player) drawList(); else if (tab === 'leagues' && !lg && !player) drawLeagues(); });
   leagues = await api('/api/leagues'); loadFinished().then(() => { chips(); if (tab === 'leagues' && !lg && !club && !player && !detail) drawLeagues(); }); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); chips(); render(); setInterval(() => { if (article || player || club || (tab === 'leagues' && lg)) return; if (tab === 'matches' || detail) { window.SILENT = true; Promise.resolve(render()).catch(() => { }).finally(() => { window.SILENT = false; }); } }, 60000); })();
 </script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));</script><script>
 (function(){
