@@ -88,10 +88,14 @@ a{color:inherit}img{max-width:100%}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #ptr{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:center;pointer-events:none;transform:translateY(-60px);transition:transform .2s ease}#ptr span{margin-top:max(10px,env(safe-area-inset-top));background:#2b2d3c;border:1px solid #333;color:#fff;font-size:12px;padding:6px 14px;border-radius:20px}#ptr.on{transform:translateY(0)}
 main{transition:opacity .2s ease}main.rf{opacity:.55}
-.spw{display:flex;justify-content:center;padding:70px 0}.spin{width:44px;height:44px;border-radius:50%;border:4px solid #3b3d50;border-top-color:var(--red);animation:rot .8s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
+.spw{display:flex;justify-content:center;padding:70px 0}.spin{width:44px;height:44px;border-radius:50%;border:4px solid #3b3d50;border-top-color:var(--red);animation:rot .8s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}.hh{display:flex;justify-content:space-between;align-items:center;margin:14px 14px 6px;font-size:17px}.hh a{color:var(--red);font-size:13px;cursor:pointer}
+.hs{display:flex;gap:10px;overflow-x:auto;padding:4px 12px;scroll-snap-type:x mandatory;scrollbar-width:none}.hs::-webkit-scrollbar{display:none}.hc{flex:0 0 86%;scroll-snap-align:center;height:170px;border-radius:16px;background-size:cover;background-position:center;background-color:#262836;display:flex;align-items:flex-end;padding:12px;cursor:pointer;font-weight:700;line-height:1.5;font-size:15px}
+.seeall{display:block;width:calc(100% - 24px);margin:10px 12px;padding:13px;border-radius:14px;border:1px solid var(--red);background:transparent;color:var(--red);font:inherit;font-weight:700;cursor:pointer}
+nav a.fb{flex:0 0 52px;display:flex;align-items:center;justify-content:center;color:#4a8bf5;min-height:48px}nav a.fb svg{width:24px;height:24px}
+</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main>
-<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button></nav>
+<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button><a class="fb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer" aria-label="صفحة ڤارو على فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></a></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'uae.1', name: 'دوري المحترفين الإماراتي', src: 'tm', tm: 'UAE1' },
@@ -437,13 +441,28 @@ async function renderDetail() {
 }
 let lastDay = [], allDay = [], searchQ = '';
 const norm = x => String(x || '').toLowerCase().replace(/[\u064B-\u065F]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+
+async function homeNews() {
+  try {
+    const slug = league !== 'all' && lgOf(league) && !lgOf(league).src ? league : 'uefa.champions';
+    if (window.HNS !== slug) { window.HNS = slug; window.HN1 = window.HN2 = ''; }
+    let items = await api('/api/news/' + slug); items = items.filter(n => n.image).slice(0, 9); items = await trItems(items.slice(0, 9));
+    items.forEach(n => { NW[n.id] = n; });
+    window.HN1 = `<div class="hh"><b>أبرز الأخبار</b></div><div class="hs">${items.slice(0, 5).map(n => `<div class="hc" data-n="${esc(n.id)}" style="background-image:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,.05) 70%),url('${esc(n.image)}')"><span>${esc(n.title)}</span></div>`).join('')}</div>`;
+    window.HN2 = `<div class="hh"><b>آخر الأخبار</b><a data-gonews="1">عرض الكل</a></div>${items.slice(5, 9).map(n => `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt="" loading="lazy"><div>${esc(n.title)}</div></div>`).join('')}`;
+    const a = document.getElementById('hn'), b = document.getElementById('hn2'); if (a && tab === 'matches' && !detail) { a.innerHTML = window.HN1; if (b) b.innerHTML = window.HN2; }
+  } catch (e) { }
+}
 function drawList() {
   const el = $('#list'); if (!el) return; const q = norm(searchQ);
   const rows = allDay.filter(d => league === 'all' || d.league.slug === league).map(d => { const lgHit = q && norm(d.league.name).includes(q); return { league: d.league, matches: !q || lgHit ? d.matches : d.matches.filter(m => norm(m.home.name).includes(q) || norm(m.away.name).includes(q)) }; }).filter(d => d.matches.length);
   const W = { live: 0, upcoming: 1, finished: 2 };
   rows.forEach(d => { d.matches = [...d.matches].sort((x, y) => W[x.status] - W[y.status] || (x.status === 'finished' ? new Date(y.date) - new Date(x.date) : new Date(x.date) - new Date(y.date))); d.w = Math.min(...d.matches.map(m => W[m.status])); });
   rows.sort((x, y) => x.w - y.w);
-  el.innerHTML = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('') || `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
+  const tot = rows.reduce((n, d) => n + d.matches.length, 0), LIM = 10; let left = (q || window.SHOWALL || tot <= LIM + 2) ? 1e9 : LIM;
+  const part = rows.map(d => { if (left <= 0) return ''; const ms = d.matches.slice(0, left); left -= ms.length; return `<div class="lg">${esc(d.league.name)}</div>${ms.map(card).join('')}`; }).join('');
+  el.innerHTML = (part ? part + (tot > LIM + 2 && !q && !window.SHOWALL ? `<button class="seeall" data-seeall="1">عرض كل المباريات (${tot})</button>` : '') : '') ||
+   `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
 let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
@@ -594,7 +613,7 @@ async function render() {
       parts.flat().forEach(g => { const e = byLg.get(g.league.slug) || { league: g.league, matches: [], ids: new Set() }; g.matches.forEach(m => { if (!e.ids.has(m.id)) { e.ids.add(m.id); e.matches.push(m); } }); byLg.set(g.league.slug, e); });
       const data = [...byLg.values()].map(e => ({ league: e.league, matches: e.matches.sort((a, b) => new Date(a.date) - new Date(b.date)) }));
       lastDay = data.map(d => ({ league: d.league, matches: d.matches.filter(m => sameDay(m.date, target)) })).filter(d => d.matches.length);
-      allDay = lastDay; chips(); main.innerHTML = dayBar() + '<div id="list"></div>'; drawList();
+      allDay = lastDay; chips(); main.innerHTML = '<div id="hn">' + (window.HN1 || '') + '</div>' + dayBar() + '<div id="list"></div><div id="hn2">' + (window.HN2 || '') + '</div>'; drawList(); homeNews();
     } else if (tab === 'standings') {
       const slug = league === 'all' ? 'eng.1' : league; const gs = await api('/api/standings/' + slug);
       main.innerHTML = gs.length ? stGroups(gs, slug) : '<div class="empty">الترتيب غير متاح</div>';
@@ -622,6 +641,8 @@ document.getElementById('home').addEventListener('click', () => { fxOn = true; t
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
   if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p],[data-t],[data-grp],[data-n]')) fxOn = true;
+  if (e.target.closest('[data-seeall]')) { window.SHOWALL = true; fxOn = false; return drawList(); }
+  const gn = e.target.closest('[data-gonews]'); if (gn) { document.querySelector('nav [data-tab=news]').click(); return; }
   const nw = e.target.closest('[data-n]'); if (nw) { article = { id: nw.dataset.n }; scrollTo(0, 0); return render(); }
   const pa = e.target.closest('[data-p]'); if (pa) { e.stopPropagation(); const [id, slug] = pa.dataset.p.split('|'); hist.push({ tab, detail, lg, player, club }); player = { id, slug }; scrollTo(0, 0); return render(); }
   const tt = e.target.closest('[data-t]'); if (tt) { e.stopPropagation(); const [slug, id] = tt.dataset.t.split('|'); hist.push({ tab, detail, lg, player, club }); player = null; detail = null; club = { slug, id }; scrollTo(0, 0); return render(); }
