@@ -426,8 +426,9 @@ async function matchesOf(s,q){const l=lgOf(s);if(!l)throw new Error('bad');
   if(l.src==='tsdb'){const r=await Promise.allSettled([get(TS+'eventspastleague.php?id='+l.tsdbId),get(TS+'eventsnextleague.php?id='+l.tsdbId)]);return sortMatches(r.flatMap(x=>x.status==='fulfilled'?normalizeTsdbEvents(x.value,s):[]));}
   return sortMatches(normalizeScoreboard(await get(B+'/site/v2/sports/soccer/'+s+'/scoreboard'+(q?'?dates='+q:'')),s));}
 async function newsOf(s){
-  if(s==='egypt-players'||(lgOf(s)&&lgOf(s).src==='tsdb')||(lgOf(s)&&lgOf(s).src==='tm')){const [dm,r]=await Promise.all([domNews(),Promise.allSettled(EGY_NEWS.map(newsOf))]);const pl=filterEgyptNews(r.flatMap(x=>x.status==='fulfilled'?x.value:[]));return (s==='egypt-players'||(lgOf(s)&&lgOf(s).src==='tsdb'))?[...dm,...pl]:pl;}
-  if(!lgOf(s))throw new Error('bad');return normalizeNews(await get(B+'/site/v2/sports/soccer/'+s+'/news?limit=50'));}
+  const dm = await domNews(), wd = await worldNews();
+  if(s==='egypt-players'||(lgOf(s)&&lgOf(s).src)) return [...dm, ...wd];
+  return wd;}
 async function standingsOf(s){const l=lgOf(s);if(!l)throw new Error('bad');
   if(l.src==='tm')return [{name:'',rows:await tmTable(l.tm)}];
   if(l.src==='tsdb'){try{return [{name:'',rows:await tmTable()}];}catch(e){}const r=normalizeTsdbTable(await get(TS+'lookuptable.php?l='+l.tsdbId+'&s=2026-2027'));return r.length?[{name:'',rows:r,partial:1}]:[];}
@@ -459,8 +460,9 @@ async function playerOf(slug,id){
   const stats={};if(st.status==='fulfilled'&&st.value.splits)(st.value.splits.categories||[]).forEach(c=>(c.stats||[]).forEach(x=>{stats[x.name]=x.value;}));
   return{name:a.displayName||'',team:a.team&&a.team.displayName||'',teamLogo:a.team&&a.team.logos&&a.team.logos[0]&&a.team.logos[0].href||'',pos:a.position&&a.position.displayName||'',posAbbr:a.position&&a.position.abbreviation||'',jersey:a.jersey||'',age:a.age||'',nat:a.citizenship||'',flag:a.flag&&a.flag.href||'',height:a.displayHeight||'',year:yr,stats,hasStats:Object.keys(stats).length>0};
 }
-let _dom = null;
-async function domNews() { try { const r = await fetch('news.json?v=' + Math.floor(Date.now() / 600000)); const j = await r.json(); _dom = (j.egypt || []).map(x => ({ id: x.id, title: x.title, summary: x.summary || '', image: x.image, url: x.url, published: '', byline: x.source || '' })); } catch (e) { if (!_dom) _dom = []; } return _dom; }
+let _dom = null, _wd = null;
+async function domNews() { try { const r = await fetch('news.json?v=' + Math.floor(Date.now() / 600000)); const j = await r.json(); const mp = x => ({ id: x.id, title: x.title, summary: '', body: x.body || '', image: x.image, url: '', published: '', byline: x.source || '' }); _dom = (j.egypt || []).map(mp); _wd = (j.world || []).map(mp); } catch (e) { if (!_dom) { _dom = []; _wd = []; } } return _dom; }
+async function worldNews() { await domNews(); return _wd || []; }
 async function apiFetch(u0){const [u,qs]=u0.split('?');const q=new URLSearchParams(qs||'').get('date');
   if(u==='/api/leagues')return LEAGUES;
   if(u==='/api/matches'){const r=await Promise.allSettled(LEAGUES.map(async l=>({league:l,matches:await matchesOf(l.slug,q)})));return r.filter(x=>x.status==='fulfilled'&&x.value.matches.length).map(x=>x.value);}
@@ -603,7 +605,7 @@ async function homeNews() {
   try {
     const slug = league !== 'all' && lgOf(league) && !lgOf(league).src ? league : 'uefa.champions';
     if (window.HNS !== slug) { window.HNS = slug; window.HN1 = window.HN2 = ''; }
-    const [wr, dm] = await Promise.all([api('/api/news/' + slug).catch(() => []), domNews()]);
+    const [wr, dm] = await Promise.all([worldNews(), domNews()]);
     const W = (wr || []).filter(n => n.image), E = dm.filter(n => n.image);
     const isEg = league !== 'all' && lgOf(league) && lgOf(league).src; let items = [];
     if (isEg) items = [...E, ...W]; else { const pat = ['E', 'E', 'W', 'E', 'W', 'E', 'W', 'E', 'W', 'E', 'W']; let ei = 0, wi = 0; pat.forEach(c => { const n = c === 'E' ? (E[ei] ? E[ei++] : W[wi++]) : (W[wi] ? W[wi++] : E[ei++]); if (n) items.push(n); }); }
@@ -864,14 +866,14 @@ async function renderClub() {
 async function renderArticle() {
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>', it = NW[article.id] || {};
   main.innerHTML = back + (it.title ? `<div class="art">${it.image ? `<img src="${esc(it.image)}" alt="">` : ''}<h1>${esc(it.title)}</h1></div>` : '') + '<div class="empty">جاري تحميل الخبر...</div>';
-  const isDom = !!(it.url && /^n[0-9a-f]{12}$/.test(String(article.id))); let h = null; if (!isDom) try { const j = await get('https://content.core.api.espn.com/v1/sports/news/' + article.id); h = (j.headlines || [])[0]; } catch (e) { }
+  const isDom = !!it.body; let h = null; if (!isDom) try { const j = await get('https://content.core.api.espn.com/v1/sports/news/' + article.id); h = (j.headlines || [])[0]; } catch (e) { }
   if (!article) return;
   if (!h && !it.title) { main.innerHTML = back + '<div class="empty">تعذر تحميل الخبر</div>'; return; }
   let paras = []; if (h && h.story) { const d = new DOMParser().parseFromString(h.story, 'text/html'); d.querySelectorAll('photo,video,iframe,script,figure,aside,style').forEach(x => x.remove()); paras = [...d.body.querySelectorAll('p,h2,h3,li')].map(e => e.textContent.replace(/\s+/g, ' ').trim()).filter(t => t.length > 1); }
   const title = it.title || await trOne((h && h.headline) || ''), img = it.image || (h && h.images && h.images[0] && h.images[0].url) || '';
   const src = (h && h.byline) || it.byline || 'ESPN', pub = (h && h.published) || it.published;
-  const body = paras.length ? paras.map(t => `<p class="ap" dir="auto">${esc(t)}</p>`).join('') : `<p class="ap" dir="auto">${esc((h && h.description) || it.summary || '')}</p>${isDom ? `<a class="chip" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:6px 0">قراءة الخبر كاملا في الموقع الرسمي</a>` : '<div class="empty" style="font-size:12px">النص الكامل غير متاح، هذا ملخص الخبر</div>'}`;
-  main.innerHTML = back + `<div class="art">${img ? `<img src="${esc(img)}" alt="">` : ''}<h1>${esc(title)}</h1><div class="meta">المصدر: ${esc(src)}${isDom ? '' : ' · ESPN'}${pub ? ' · ' + esc(new Date(pub).toLocaleDateString(LOC, { day: 'numeric', month: 'long', year: 'numeric' })) : ''}</div>${paras.length ? '<button class="chip" id="trb" style="margin:6px 0 10px">ترجمة النص للعربية</button><div class="meta" style="margin-top:-4px">النص الأصلي بالإنجليزية، الترجمة آلية</div>' : ''}<div id="abody">${body}</div></div>`;
+  const body = isDom ? it.body.split(/\n+/).map(t => `<p class="ap" dir="auto">${esc(t)}</p>`).join('') : `<p class="ap" dir="auto">${esc((h && h.description) || it.summary || '')}</p>`;
+  main.innerHTML = back + `<div class="art">${img ? `<img src="${esc(img)}" alt="">` : ''}<h1>${esc(title)}</h1><div class="meta">المصدر: ${esc(src)}</div>${false ? '<button class="chip" id="trb" style="margin:6px 0 10px">ترجمة النص للعربية</button><div class="meta" style="margin-top:-4px">النص الأصلي بالإنجليزية، الترجمة آلية</div>' : ''}<div id="abody">${body}</div></div>`;
   const tb = document.getElementById('trb'); if (tb) tb.onclick = async () => { tb.disabled = true; tb.textContent = 'جاري الترجمة...'; const els = [...document.querySelectorAll('#abody .ap')]; for (const el of els.slice(0, 14)) { if (!document.body.contains(el)) return; const t = await trOne(el.textContent); el.textContent = t; el.setAttribute('dir', 'auto'); } try { localStorage.setItem('varo_tr', JSON.stringify(trCache)); } catch (e) { } tb.textContent = els.length > 14 ? 'تمت ترجمة أول 14 فقرة' : 'تمت الترجمة'; };
 }
 async function render() {
