@@ -664,7 +664,7 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
 (function(){
 const main=document.getElementById('main');
 const skl=()=>'<div class="spw" role="status" aria-busy="true"><div class="spin"></div><span class="sr-only">جاري التحميل...</span></div>';
-new MutationObserver(()=>{const c=main.children;if(c.length===1&&c[0].classList.contains('empty')&&c[0].textContent.trim()==='جاري التحميل...')main.innerHTML=skl();}).observe(main,{childList:true});
+const cv=()=>{const c=main.children;if(c.length===1&&c[0].classList.contains('empty')&&c[0].textContent.trim()==='جاري التحميل...')main.innerHTML=skl();};new MutationObserver(cv).observe(main,{childList:true});cv();
 // pull to refresh
 const ptr=document.createElement('div');ptr.id='ptr';ptr.innerHTML='<span>اسحب للتحديث</span>';document.body.appendChild(ptr);
 let y0=null,dy=0,busy=false;
