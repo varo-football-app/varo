@@ -67,18 +67,55 @@ def ahly():
         out.append({"id": "n" + hashlib.md5(link.encode()).hexdigest()[:12], "title": title, "summary": "", "image": img, "url": link, "source": "النادي الأهلي (الموقع الرسمي)", "cat": ""})
     print("ahly", len(out), file=sys.stderr)
     return out
-ah = ahly()
-zm = items("https://www.zamaleksc.com/feed.xml", "نادي الزمالك (الموقع الرسمي)", "zamalek")
-egypt = dedupe(mix(ah, zm))[:40]
-new = {"egypt": egypt, "arab": []}
+
+import os, datetime
+def ahly_text(u):
+    try:
+        h = get(u)
+        ps = [clean(t) for t in re.findall(r"<p[^>]*>(.*?)</p>", h, re.S)]
+        return " ".join(p for p in ps if len(p) > 25 and "{" not in p)[:1200]
+    except Exception:
+        return ""
+def espn():
+    out = []
+    for s in ["uefa.champions", "eng.1", "esp.1", "ita.1", "ger.1"]:
+        try:
+            j = json.loads(urllib.request.urlopen(urllib.request.Request("https://site.api.espn.com/apis/site/v2/sports/soccer/%s/news?limit=10" % s, headers={"User-Agent": "Mozilla/5.0"}), timeout=25).read().decode("utf-8", "ignore"))
+        except Exception as e:
+            print("FAIL espn", s, e, file=sys.stderr); continue
+        for a in j.get("articles", []):
+            im = [x.get("url") for x in a.get("images", []) if x.get("url", "").startswith("https://a.espncdn.com/photo")]
+            t = a.get("headline", "")
+            if not im or re.search(r"Highlights|Watch|VAR review|Transfer rumors", t): continue
+            out.append({"id": "w" + str(a["id"]), "src_title": t, "text": a.get("description", ""), "image": im[0], "source": "ESPN"})
+    return dedupe2(out)
+def dedupe2(l):
+    seen, o = set(), []
+    for x in l:
+        if x["id"] not in seen:
+            seen.add(x["id"]); o.append(x)
+    return o
+ah = ahly(); zm = items("https://www.zamaleksc.com/feed.xml", "نادي الزمالك (الموقع الرسمي)", "zamalek")
+cand = []
+for x in mix(ah[:12], zm[:12]):
+    cand.append({"id": x["id"], "src_title": x["title"], "text": x["summary"] or ahly_text(x["url"]), "image": x["image"], "source": x["source"], "grp": "egypt"})
+for x in espn()[:30]:
+    x["grp"] = "world"; cand.append(x)
+if len(cand) < 5:
+    print("too few candidates, keeping old file", file=sys.stderr); sys.exit(0)
+rw = json.load(open("rewrites.json", encoding="utf-8")) if os.path.exists("rewrites.json") else {}
+res = {"egypt": [], "world": [], "arab": []}
+for c in cand:
+    r = rw.get(c["id"])
+    if not r: continue
+    res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"]})
+json.dump(cand, open("cand.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 try:
-    old = json.load(open("news.json", encoding="utf-8"))
-    old.pop("updated", None)
+    old = json.load(open("news.json", encoding="utf-8")); old.pop("updated", None)
 except Exception:
     old = None
-if not egypt:
-    print("no items fetched, keeping old file", file=sys.stderr); sys.exit(0)
-if old != new:
-    new["updated"] = __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    json.dump(new, open("news.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print("updated", len(egypt), file=sys.stderr)
+if old != res and (res["egypt"] or res["world"]):
+    res["updated"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    json.dump(res, open("news.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print("updated", len(res["egypt"]), len(res["world"]), file=sys.stderr)
+print("pending rewrite:", [c["id"] for c in cand if c["id"] not in rw], file=sys.stderr)
