@@ -371,8 +371,9 @@ function statusOf(t) {
   const n = t && t.type && t.type.state; // pre | in | post
   return n === 'in' ? 'live' : n === 'post' ? 'finished' : 'upcoming';
 }
+const IL = /hapoel|maccabi|macabi|beitar|bnei sakhnin|sakhnin|ironi|kiryat|israel|هبوعيل|هابويل|مكابي|ميكابي|بيتار|إسرائيل|اسرائيل|سخنين/i, isIL = n => IL.test(String(n || ''));
 function normalizeScoreboard(json, league) {
-  return (json.events || []).map(ev => {
+  return (json.events || []).filter(ev => { const cs = (((ev.competitions || [])[0] || {}).competitors || []); return !cs.some(t => isIL(t.team && (t.team.displayName || t.team.shortDisplayName || t.team.name))); }).map(ev => {
     const c = (ev.competitions || [])[0] || {};
     const teams = c.competitors || [];
     const home = teams.find(t => t.homeAway === 'home') || teams[0] || {};
@@ -397,7 +398,7 @@ function normalizeStandings(json) {
 }
 function normGroup(c) {
   const entries = ((c || {}).standings || {}).entries || [];
-  return entries.map(e => {
+  return entries.filter(e => !isIL(e.team.displayName || e.team.shortDisplayName)).map(e => {
     const s = {}; (e.stats || []).forEach(x => { s[x.name] = x.value; });
     return { tid: e.team.id, team: e.team.shortDisplayName || e.team.displayName, logo: e.team.logos && e.team.logos[0] && e.team.logos[0].href || '',
       rank: s.rank, played: s.gamesPlayed, won: s.wins, drawn: s.ties, lost: s.losses, gd: s.pointDifferential, points: s.points };
@@ -466,7 +467,7 @@ const CORE='https://sports.core.api.espn.com/v2/sports/soccer/leagues/',ATH='htt
 async function leadersOf(slug){
   if((lgOf(slug)||{}).src){const cd=lgOf(slug).tm||'EGY1';const [g,a]=await Promise.all([tmLeaders('torschuetzenliste/wettbewerb/'+cd),tmLeaders('assistliste/wettbewerb/'+cd)]);return{year:0,goals:g,assists:a,tm:1};}
   const j=await get(B+'/site/v2/sports/soccer/'+slug+'/statistics');
-  const pick=n=>{const c=(j.stats||[]).find(x=>x.name===n);return c?(c.leaders||[]).slice(0,25).map(l=>{const a=l.athlete||{},t=a.team||{},mt=/Matches:\s*(\d+)/.exec(l.displayValue||'');return{id:a.id||'',name:a.displayName||'',team:t.displayName||'',logo:(t.logos&&t.logos[0]&&t.logos[0].href)||'',value:l.value,matches:mt?mt[1]:''};}):[];};
+  const pick=n=>{const c=(j.stats||[]).find(x=>x.name===n);return c?(c.leaders||[]).filter(l=>!isIL(((l.athlete||{}).team||{}).displayName)).slice(0,25).map(l=>{const a=l.athlete||{},t=a.team||{},mt=/Matches:\s*(\d+)/.exec(l.displayValue||'');return{id:a.id||'',name:a.displayName||'',team:t.displayName||'',logo:(t.logos&&t.logos[0]&&t.logos[0].href)||'',value:l.value,matches:mt?mt[1]:''};}):[];};
   return{year:j.season&&j.season.year,goals:pick('goalsLeaders'),assists:pick('assistsLeaders')};
 }
 const TMU='https://www.transfermarkt.com/x/';
@@ -771,8 +772,8 @@ function egBB() {
   return `<div class="hh"><b>الدوري المصري للسلة</b></div><div style="padding:0 12px">${L.map(card).join('')}</div><div class="empty" style="font-size:12px;padding:6px">المصدر: الاتحاد المصري لكرة السلة (صفحته على فيسبوك وجدول موقعه الرسمي)</div>`;
 }
   const egH = isport === 'vb' ? await egVb() : isport === 'bb' ? egBB() : '';
-  const res = await Promise.allSettled(sp.ep.map(([ep, name]) => Promise.allSettled(qs.map(q => get(B + '/site/v2/sports/' + ep + '/scoreboard?limit=100' + q))).then(rs => { const seen = new Set(), ev = []; rs.forEach(r => { if (r.status === 'fulfilled') (r.value.events || []).forEach(e => { if (!seen.has(e.id)) { seen.add(e.id); ev.push(e); } }); }); return { name, ev }; })));
-  let newsItems = []; try { if (sp.news) { const j = await get(B + '/site/v2/sports/' + sp.news + '/news?limit=12'); newsItems = (j.articles || []).filter(x => x.headline).slice(0, 8).map(x => ({ id: String(x.id), title: x.headline, image: ((x.images || []).find(i => i.url && !/stitcher/.test(i.url)) || {}).url || '', summary: x.description || '', published: x.published })); newsItems = await trItems(newsItems); newsItems.forEach(n => { NW[n.id] = n; }); } } catch (e) { }
+  const res = await Promise.allSettled(sp.ep.map(([ep, name]) => Promise.allSettled(qs.map(q => get(B + '/site/v2/sports/' + ep + '/scoreboard?limit=100' + q))).then(rs => { const seen = new Set(), ev = []; rs.forEach(r => { if (r.status === 'fulfilled') (r.value.events || []).forEach(e => { if (!seen.has(e.id) && !(((e.competitions || [])[0] || {}).competitors || []).some(t => isIL(t.team && (t.team.displayName || t.team.shortDisplayName || t.team.name)))) { seen.add(e.id); ev.push(e); } }); }); return { name, ev }; })));
+  let newsItems = []; try { if (sp.news) { const j = await get(B + '/site/v2/sports/' + sp.news + '/news?limit=12'); newsItems = (j.articles || []).filter(x => x.headline && !isIL(x.headline + ' ' + (x.description || ''))).slice(0, 8).map(x => ({ id: String(x.id), title: x.headline, image: ((x.images || []).find(i => i.url && !/stitcher/.test(i.url)) || {}).url || '', summary: x.description || '', published: x.published })); newsItems = await trItems(newsItems); newsItems.forEach(n => { NW[n.id] = n; }); } } catch (e) { }
   if (tab !== 'indoor' || isport !== (Object.keys(ISP).find(k => ISP[k] === sp)) || article) return;
   const secs = res.filter(r => r.status === 'fulfilled' && r.value.ev.length).map(r => { const ev = r.value.ev.sort((x, y) => W[x.status.type.state] - W[y.status.type.state] || (x.status.type.state === 'post' ? new Date(y.date) - new Date(x.date) : new Date(x.date) - new Date(y.date))).slice(0, 15); return `<div class="lg">${esc(r.value.name)}</div>${ev.map(icard).join('')}`; }).join('');
   const nw = newsItems.length ? `<div class="hh"><b>آخر الأخبار</b></div>` + newsItems.map(n => `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer">${n.image ? `<img src="${esc(n.image)}" alt="" loading="lazy">` : ''}<div>${esc(n.title)}</div></div>`).join('') : '';
@@ -1080,7 +1081,7 @@ function sheet(){
   const s=S();const p=document.getElementById('ntp');
   const perm='Notification' in window?Notification.permission:'unsupported';
   const rows=[['on',t('تفعيل الإشعارات','Enable notifications')],['start',t('بداية المباراة','Match start')],['goal',t('الأهداف','Goals')],['end',t('نهاية المباراة','Full time')]];
-  const lg=leaguesList();const teams=[...new Set([...s.teams,...seenTeams])].slice(0,40);
+  const lg=leaguesList();const teams=[...new Set([...s.teams,...seenTeams])].filter(t=>!isIL(t)).slice(0,40);
   const inb=inbox().slice(0,15);
   p.innerHTML=`<div class="sh" role="dialog"><h3>${t('الإشعارات','Notifications')}</h3>`+
   rows.map(r=>`<div class="rw"><span>${r[1]}</span><button class="sw ${s[r[0]]?'on':''}" data-k="${r[0]}" aria-label="${r[1]}"></button></div>`).join('')+
