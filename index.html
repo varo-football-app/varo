@@ -717,7 +717,7 @@ async function render() {
 function chips() {
   const ordered = leaguesOrdered();
   let opts;
-  if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
+  if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug) || l.slug === 'egy.1').map(l => ({ slug: l.slug, name: l.name + ' (' + (have.get(l.slug) || 0) + ')' })); if (league !== 'all' && league !== 'egy.1' && !have.has(league)) league = 'all'; }
   else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
   $('#lsel').style.display = (tab === 'leagues' || tab === 'indoor') ? 'none' : ''; { const qq = document.getElementById('q'); if (qq && qq.parentNode) qq.parentNode.style.display = tab === 'indoor' ? 'none' : ''; }
   const sel = $('#lsel'), all = tab === 'standings' ? opts : [{ slug: 'all', name: 'كل البطولات' }, ...opts]; const effL = tab === 'standings' && league === 'all' ? 'eng.1' : league;
