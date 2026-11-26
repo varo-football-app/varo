@@ -102,6 +102,122 @@ body{line-height:1.5}header{padding:16px 16px 6px}.dd{margin:0 16px 10px}.chips{
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main><footer class="ft"><a class="fbb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg><span>Follow</span></a><div class="cp">ڤارو VARO</div></footer>
 <nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button><button data-tab="indoor">الصالات</button><a class="fb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer" aria-label="صفحة ڤارو على فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></a></nav>
+<script>/* ---- settings: language + theme, auto-rotating hero ---- */
+(function () {
+  const L = localStorage.getItem('varoLang') === 'en' ? 'en' : 'ar';
+  const D = {
+    'المباريات القادمة': 'Upcoming matches', 'لا توجد مباريات متاحة في الأيام القريبة': 'No matches available in the coming days', 'لا توجد مباريات متاحة من المصدر': 'No matches available from the source',
+    'النص الأصلي بالإنجليزية، الترجمة آلية': 'Original text in English, machine translated', 'النص الكامل غير متاح، هذا ملخص الخبر': 'Full text unavailable, this is the summary',
+    'المصدر: الاتحاد المصري لكرة السلة (صفحته على فيسبوك وجدول موقعه الرسمي)': 'Source: Egyptian Basketball Federation (its Facebook page and official schedule site)', 'المصدر: الاتحاد المصري للكرة الطائرة': 'Source: Egyptian Volleyball Federation',
+    'لا يوجد حاليا مصدر بيانات موثوق لمباريات وأخبار كرة اليد، لذلك لا نعرض أي بيانات هنا حتى نضيف مصدرا مؤكدا': 'There is no reliable data source for handball matches and news yet, so nothing is shown until a confirmed source is added',
+    'لا يوجد جدول ترتيب لهذه البطولة من المصدر (نظام خروج المغلوب أو غير متاح)': 'No standings for this competition from the source (knockout format or unavailable)',
+    'لا يوجد اتصال بالإنترنت. تعرض آخر بيانات محفوظة': 'No internet connection. Showing last saved data', 'المصدر لا يوفر إحصائيات هذا اللاعب في هذه البطولة': 'The source has no stats for this player in this competition',
+    'المصدر لا يوفر أحداث هذه المباراة (النتيجة فقط)': 'The source has no events for this match (score only)', 'تغطية الكرة الطائرة المتاحة هي الدوري الجامعي الأمريكي فقط': 'Available volleyball coverage is the US college league only',
+    'التشكيل الرسمي لم يُعلن بعد. المعروض: اللاعبون الأكثر مشاركة أساسيًا في آخر مباريات الفريق بنفس البطولة (مش تشكيل رسمي)': 'Official lineup not announced yet. Shown: players who started most in the team\'s recent matches in this competition (not an official lineup)',
+    'دوري المرتبط سيدات - نصف النهائي (الإياب)': 'Martabet League Women - semi-final (2nd leg)', 'دوري المرتبط رجال': 'Martabet League Men', 'الكرة الطائرة الجامعية الأمريكية - رجال': 'US college volleyball - men', 'الكرة الطائرة الجامعية الأمريكية - سيدات': 'US college volleyball - women', 'الكرة الطائرة الجامعية الأمريكية': 'US college volleyball',
+    'الدوري المصري للكرة الطائرة': 'Egyptian Volleyball League', 'دوري السلة الأمريكي للسيدات': 'WNBA', 'دوري السلة الأمريكي': 'NBA', 'الدوري المصري للسلة': 'Egyptian Basketball League', 'اليورو ليج': 'EuroLeague', 'كأس العالم FIBA': 'FIBA World Cup',
+    'لا توجد مباريات': 'No matches', 'لا أخبار للمحترفين المصريين حاليا': 'No news for Egyptian pros right now', 'تفاصيل المباراة غير متاحة': 'Match details unavailable', 'تعذر تحميل مباريات الفريق': 'Could not load team matches', 'تعذر تحميل بيانات اللاعب': 'Could not load player data', 'تعذر التحميل، حاول مرة أخرى': 'Could not load, try again',
+    'التشكيل لم يُعلن بعد': 'Lineup not announced yet', 'التشكيل غير متاح من المصدر': 'Lineup not available from the source', 'لا توجد تبديلات حتى الآن': 'No substitutions yet', 'جدول جزئي: تعذر الوصول إلى': 'Partial table: could not reach', 'تظهر آخر 5 أدوار فقط': 'Only the last 5 rounds are shown',
+    'تمت ترجمة أول 14 فقرة': 'First 14 paragraphs translated', 'ملحق الأدوار الإقصائية': 'Knockout play-off', 'لا نتائج للبحث': 'No search results', 'لا بيانات كافية': 'Not enough data', 'المصدر لا يوفر': 'The source does not provide',
+    'عرض ترتيب المجموعات': 'Show group standings', 'اختر دوري أو بطولة': 'Choose a league or competition', 'ابحث عن فريق أو دوري': 'Search a team or league', 'ترجمة النص للعربية': 'Translate text to Arabic', 'صفحة ڤارو على فيسبوك': 'VARO on Facebook',
+    'التبديلات والبدلاء': 'Substitutions and bench', 'ترتيب صناع الأهداف': 'Top assists', 'ترتيب الهدافين': 'Top scorers', 'مباريات الموسم': 'Season matches', 'إحصائيات الموسم': 'Season stats', 'إحصائيات المباراة': 'Match stats', 'التنقل الرئيسي': 'Main navigation',
+    'اسحب للتحديث': 'Pull to refresh', 'اترك للتحديث': 'Release to refresh', 'جاري التحديث': 'Refreshing', 'جاري الترجمة': 'Translating', 'جاري تحميل الخبر': 'Loading article', 'تعذر تحميل الخبر': 'Could not load article', 'جاري التحميل': 'Loading', 'تمت الترجمة': 'Translated',
+    'الترتيب غير متاح': 'Standings unavailable', 'لهذه البطولة': 'for this competition', 'صناع الأهداف': 'Assists', 'الأدوار الإقصائية': 'Knockout rounds', 'لم يُحدد بعد': 'TBD', 'في هذا اليوم': 'on this day',
+    'المسابقات والبطولات': 'Leagues and cups', 'آخر الأخبار': 'Latest news', 'أبرز الأخبار': 'Top news', 'كل المباريات': 'All matches', 'كل البطولات': 'All competitions', 'آخر النتائج': 'Latest results',
+    'عالمية ومنتخبات': 'World and national teams', 'آسيا والخليج': 'Asia and Gulf', 'أمريكا الشمالية': 'North America', 'أمريكا الجنوبية': 'South America', 'أوروبا': 'Europe', 'أفريقيا': 'Africa',
+    'بانتظار النتيجة': 'Awaiting result', 'جارية الآن': 'In play', 'لم تبدأ': 'Not started', 'ربع النهائي': 'Quarter-final', 'نصف النهائي': 'Semi-final', 'النهائي': 'Final', 'المركز الثالث': 'Third place', 'مرحلة الدوري': 'League phase', 'دور المجموعات': 'Group stage', 'المجموعة': 'Group', 'مجموعة': 'Group',
+    'الدور الأول': 'Round 1', 'الدور الثاني': 'Round 2', 'الدور الثالث': 'Round 3', 'الدور الرابع': 'Round 4', 'الدور الخامس': 'Round 5', 'الدور السادس': 'Round 6', 'الدور السابع': 'Round 7', 'الدور الثامن': 'Round 8',
+    'صالة استاد القاهرة': 'Cairo Stadium hall', 'صالة برج العرب': 'Burg El Arab hall', 'الصالات': 'Indoor', 'كرة السلة': 'Basketball', 'الكرة الطائرة': 'Volleyball', 'كرة اليد': 'Handball',
+    'المباريات': 'Matches', 'الترتيب': 'Standings', 'الرئيسية': 'Home', 'عرض الكل': 'See all', 'رجوع': 'Back', 'اليوم': 'Today', 'أمس': 'Yesterday', 'غدا': 'Tomorrow', 'مباشر': 'Live', 'انتهت': 'Full-time',
+    'الهدافون': 'Scorers', 'الأهداف': 'Goals', 'التشكيل': 'Lineup', 'الأحداث': 'Events', 'الفريق': 'Team', 'النتائج': 'Results', 'القادمة': 'Upcoming', 'المصدر': 'Source', 'نقاط': 'Pts', 'لعب': 'P', 'فاز': 'W',
+    'الاستحواذ': 'Possession', 'التسديدات': 'Shots', 'على المرمى': 'on target', 'التمريرات': 'Passes', 'الركنيات': 'Corners', 'الأخطاء': 'Fouls', 'التسلل': 'Offsides', 'بطاقات صفراء': 'Yellow cards', 'بطاقات حمراء': 'Red cards', 'صفراء': 'Yellow', 'حمراء': 'Red',
+    'تصديات': 'Saves', 'التصديات': 'Saves', 'شباك نظيفة': 'Clean sheets', 'التمريرات الحاسمة': 'Assists', 'أهداف دخلت': 'Goals conceded', 'على الدكة': 'On the bench', 'أساسي': 'Starter', 'التبديلات': 'Substitutions', 'المسار': 'Path', 'لا أخبار': 'No news',
+    'الدوري المصري': 'Egyptian Premier League', 'الدوري الإنجليزي': 'Premier League', 'الدوري الإسباني': 'La Liga', 'الدوري الإيطالي': 'Serie A', 'الدوري الألماني': 'Bundesliga', 'الدوري الفرنسي': 'Ligue 1', 'الدوري السعودي': 'Saudi Pro League', 'الدوري الأوروبي': 'Europa League', 'المؤتمر الأوروبي': 'Conference League',
+    'دوري أبطال أوروبا': 'Champions League', 'دوري أبطال أفريقيا': 'CAF Champions League', 'كأس الكونفدرالية الأفريقية': 'CAF Confederation Cup', 'كأس الأمم الأفريقية (أفكون)': 'Africa Cup of Nations', 'كأس العالم': 'World Cup', 'دوري أبطال آسيا 2': 'AFC Champions League 2', 'دوري أبطال آسيا': 'AFC Champions League',
+    'الدوري البرتغالي': 'Portuguese League', 'الدوري الهولندي': 'Eredivisie', 'الدوري التركي': 'Turkish Super Lig', 'الدوري البرازيلي': 'Brazilian Serie A', 'الدوري الأرجنتيني': 'Argentine League', 'الدوري الكولومبي': 'Colombian League', 'الدوري المكسيكي': 'Liga MX', 'الدوري الأمريكي MLS': 'MLS',
+    'كأس الاتحاد الإنجليزي': 'FA Cup', 'كأس الرابطة': 'League Cup', 'كأس ملك إسبانيا': 'Copa del Rey', 'كأس إيطاليا': 'Coppa Italia', 'كأس ألمانيا': 'DFB-Pokal', 'كأس فرنسا': 'Coupe de France', 'كوبا ليبرتادوريس': 'Copa Libertadores', 'ودية دولية': 'International friendly', 'كأس بوليفيا': 'Bolivian Cup',
+    'الأهلي': 'Al Ahly', 'سموحة': 'Smouha', 'الجزيرة': 'Gezira', 'سبورتنج': 'Sporting', 'هليوبوليس': 'Heliopolis', 'مصر': 'Egypt',
+    'ڤارو': 'VARO', 'آخر': 'Latest', 'أخرى': 'Other', 'لاعب': 'Player', 'مباراة': 'Match', 'مباريات': 'Matches'
+  };
+  const keys = Object.keys(D).sort((a, b) => b.length - a.length);
+  window.LOC = L === 'en' ? 'en-US' : 'ar-EG';
+  const de = document.documentElement;
+  const mq = matchMedia('(prefers-color-scheme: light)');
+  const applyTheme = () => { const t = localStorage.getItem('varoTheme') || 'dark', eff = t === 'auto' ? (mq.matches ? 'light' : 'dark') : t; de.setAttribute('data-theme', eff); const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = eff === 'light' ? '#f3f4f8' : '#d8232a'; };
+  applyTheme(); mq.addEventListener && mq.addEventListener('change', applyTheme);
+  if (L === 'en') { de.lang = 'en'; de.dir = 'ltr'; }
+  const ar = /[\u0600-\u06FF]/;
+  const tr = s => { if (!ar.test(s)) return s; let o = s; for (const k of keys) if (o.indexOf(k) >= 0) o = o.split(k).join(D[k]); return ar.test(o) ? s : o; };
+  const walk = n => {
+    if (n.nodeType === 3) { const v = n.nodeValue; if (ar.test(v)) { const t = tr(v); if (t !== v) n.nodeValue = t; } return; }
+    if (n.nodeType !== 1 || /^(SCRIPT|STYLE)$/.test(n.tagName)) return;
+    ['placeholder', 'aria-label', 'title'].forEach(a => { const v = n.getAttribute && n.getAttribute(a); if (v && ar.test(v)) n.setAttribute(a, tr(v)); });
+    n.childNodes.forEach(walk);
+  };
+  const css = document.createElement('style');
+  css.textContent = `
+html[data-theme=light]{--bg:#f3f4f8;--card:#fff;--tx:#1b1c24;--mut:#6b6d7b}
+html[data-theme=light] header{border-bottom-color:#dcdde6}
+html[data-theme=light] nav{background:#fff;border-top-color:#dcdde6}
+html[data-theme=light] .ddb,html[data-theme=light] input#q{background:#fff;border-color:#d4d6e0;color:var(--tx)}
+html[data-theme=light] .ddp{background:#fff;border-color:#d4d6e0;box-shadow:0 14px 34px rgba(0,0,0,.15)}
+html[data-theme=light] .m{box-shadow:0 1px 3px rgba(20,20,40,.12)}
+html[data-theme=light] .goals,html[data-theme=light] .ev,html[data-theme=light] .sbr,html[data-theme=light] .pl,html[data-theme=light] .evr{border-color:#e3e4ec}
+html[data-theme=light] .gp{background:#fff;border-color:#dcdde6}html[data-theme=light] .gb{background:#f6f6fa}html[data-theme=light] .gb .lrow{background:#fff;color:#33344a;border-color:#e3e4ec}
+html[data-theme=light] .sk{background:linear-gradient(100deg,#e6e7ee 30%,#f2f3f8 50%,#e6e7ee 70%);background-size:200% 100%}
+html[data-theme=light] .bdg.fin{background:#e1e2ea;color:#4b4d5e}html[data-theme=light] .ft{border-top-color:#d4d6e0}
+html[data-theme=light] .chip,html[data-theme=light] .gsw button,html[data-theme=light] .seg button{background:#fff;color:var(--tx)}
+html[data-theme=light] .chip.on,html[data-theme=light] .seg button.on{background:var(--red);color:#fff}
+html[data-theme=light] .bm,html[data-theme=light] .bg,html[data-theme=light] .tbl{background:#fff}
+#gear{position:absolute;top:max(12px,env(safe-area-inset-top));inset-inline-start:16px;background:var(--card);color:var(--tx);border:0;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:6}
+#setp{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;display:none;align-items:flex-end;justify-content:center}
+#setp.on{display:flex}
+#setp .sh{background:var(--card);color:var(--tx);width:100%;max-width:520px;border-radius:26px 26px 0 0;padding:26px 16px calc(26px + env(safe-area-inset-bottom))}
+#setp h3{margin:0 0 16px;font-size:21px}#setp .gr{margin:0 0 16px}#setp .gr b{display:block;font-size:13px;color:var(--mut);margin-bottom:10px}
+#setp .op{display:flex;gap:10px}#setp .op button{flex:1;background:var(--bg);color:var(--tx);border:2px solid transparent;border-radius:14px;padding:13px 6px;font:inherit;font-size:16px;cursor:pointer}
+#setp .op button.on{border-color:var(--red);font-weight:700}
+#setp .cl{width:100%;background:var(--red);color:#fff;border:0;border-radius:14px;padding:13px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+#setp small{display:block;color:var(--mut);font-size:12px;margin:0 0 16px;line-height:1.5}`;
+  document.head.appendChild(css);
+  const build = () => {
+    const hd = document.querySelector('header'); if (!hd || document.getElementById('gear')) return;
+    hd.style.position = 'sticky';
+    const g = document.createElement('button'); g.id = 'gear'; g.setAttribute('aria-label', L === 'en' ? 'Settings' : 'الإعدادات');
+    g.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+    hd.appendChild(g);
+    const p = document.createElement('div'); p.id = 'setp';
+    const th = localStorage.getItem('varoTheme') || 'dark';
+    const T = L === 'en' ? { h: 'Settings', l: 'Language', t: 'Theme', d: 'Dark', li: 'Light', a: 'Auto (device)', c: 'Done', n: 'The interface language changes. News articles and team names stay in their source language.' } : { h: 'الإعدادات', l: 'اللغة', t: 'المظهر', d: 'داكن', li: 'فاتح', a: 'تلقائي (حسب الجهاز)', c: 'تم', n: 'لغة الواجهة هي التي تتغير. نصوص الأخبار وأسماء الفرق تبقى بلغتها الأصلية.' };
+    p.innerHTML = `<div class="sh" role="dialog"><h3>${T.h}</h3><div class="gr"><b>${T.l}</b><div class="op"><button data-lang="ar" class="${L === 'ar' ? 'on' : ''}">العربية</button><button data-lang="en" class="${L === 'en' ? 'on' : ''}">English</button></div></div><div class="gr"><b>${T.t}</b><div class="op"><button data-theme="dark" class="${th === 'dark' ? 'on' : ''}">${T.d}</button><button data-theme="light" class="${th === 'light' ? 'on' : ''}">${T.li}</button><button data-theme="auto" class="${th === 'auto' ? 'on' : ''}">${T.a}</button></div></div><small>${T.n}</small><button class="cl">${T.c}</button></div>`;
+    document.body.appendChild(p);
+    g.onclick = () => p.classList.add('on');
+    p.onclick = e => {
+      if (e.target === p || e.target.closest('.cl')) return p.classList.remove('on');
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.lang) { localStorage.setItem('varoLang', b.dataset.lang); location.reload(); }
+      if (b.dataset.theme) { localStorage.setItem('varoTheme', b.dataset.theme); applyTheme(); p.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('on', x === b)); }
+    };
+  };
+  const start = () => {
+    build();
+    if (L === 'en') { walk(document.body); new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') walk(m.target); else m.addedNodes.forEach(walk); } }).observe(document.body, { childList: true, subtree: true, characterData: true }); }
+    // hero auto-advance every 3 s, pauses on touch
+    let hold = 0; const pause = () => { hold = Date.now() + 8000; };
+    document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
+    document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
+    document.addEventListener('wheel', e => { if (e.target.closest && e.target.closest('.hs')) pause(); }, { passive: true });
+    setInterval(() => {
+      if (document.hidden || Date.now() < hold) return;
+      const hs = document.querySelector('#hn .hs'); if (!hs) return; const cs = [...hs.querySelectorAll('.hc')]; if (cs.length < 2) return;
+      const r = hs.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+      const mid = r.left + r.width / 2; let cur = 0, best = 1e9; cs.forEach((c, i) => { const q = c.getBoundingClientRect(), d = Math.abs(q.left + q.width / 2 - mid); if (d < best) { best = d; cur = i; } });
+      const nx = cs[(cur + 1) % cs.length].getBoundingClientRect();
+      hs.scrollBy({ left: nx.left + nx.width / 2 - mid, behavior: 'smooth' });
+    }, 3000);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'uae.1', name: 'دوري المحترفين الإماراتي', src: 'tm', tm: 'UAE1' },
@@ -332,7 +448,7 @@ const pad = n => String(n).padStart(2, '0');
 const dayAt = o => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + o); return d; };
 const ymd = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 const sameDay = (iso, d) => ymd(new Date(iso)) === ymd(d);
-const dayLabel = o => o === 0 ? 'اليوم' : o === -1 ? 'أمس' : o === 1 ? 'غدا' : dayAt(o).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'numeric' });
+const dayLabel = o => o === 0 ? 'اليوم' : o === -1 ? 'أمس' : o === 1 ? 'غدا' : dayAt(o).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'numeric' });
 function dayBar() { return '<div class="chips" style="padding:10px 12px 0">' + [-2, -1, 0, 1, 2].map(o => `<button class="chip ${o === dayOff ? 'on' : ''}" data-day="${o}">${dayLabel(o)}</button>`).join('') + '</div>'; }
 let tab = Q.get('tab') || 'matches', league = Q.get('league') || 'all', leagues = [];
 const $ = s => document.querySelector(s), main = $('#main');
@@ -346,7 +462,7 @@ async function trOne(t) {
 async function trItems(items) { const out = await Promise.all(items.map(async n => ({ ...n, title: await trOne(n.title) }))); try { localStorage.setItem('varo_tr', JSON.stringify(trCache)); } catch (e) { } return out; }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const api = apiFetch;
-const stText = m => m.status === 'live' ? `مباشر ${m.clock}` : m.status === 'finished' ? 'انتهت' : new Date(m.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+const stText = m => m.status === 'live' ? `مباشر ${m.clock}` : m.status === 'finished' ? 'انتهت' : new Date(m.date).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' });
 const MM = {};
 const BDG = st => st === 'live' ? '<div class="bdg">Live</div>' : (st === 'finished' || st === 'post') ? '<div class="bdg fin">Full-time</div>' : '<div class="bdg">Pre-match</div>';
 function card(m) {
@@ -508,7 +624,7 @@ function icard(e) {
   const c = e.competitions && e.competitions[0]; if (!c) return ''; const h = c.competitors.find(x => x.homeAway === 'home') || c.competitors[0], a = c.competitors.find(x => x.homeAway === 'away') || c.competitors[1]; if (!h || !a) return '';
   const st = e.status.type.state, up = st === 'pre', cls = st === 'in' ? 'live' : up ? 'upcoming' : 'finished';
   const dt = new Date(e.date), sc = up ? '-' : `${a.score ?? 0} : ${h.score ?? 0}`;
-  const tx = st === 'in' ? 'مباشر ' + esc(e.status.type.shortDetail || '') : up ? dt.toLocaleDateString('ar-EG', { day: 'numeric', month: 'numeric' }) + ' ' + dt.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit' }) : 'انتهت';
+  const tx = st === 'in' ? 'مباشر ' + esc(e.status.type.shortDetail || '') : up ? dt.toLocaleDateString(LOC, { day: 'numeric', month: 'numeric' }) + ' ' + dt.toLocaleTimeString(LOC, { hour: 'numeric', minute: '2-digit' }) : 'انتهت';
   const t = x => `<div class="t"><img src="${esc(x.team.logo || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.team.shortDisplayName || x.team.displayName)}</span></div>`;
   return `<div class="m ${cls}" style="cursor:default">${BDG(st === 'in' ? 'live' : up ? 'upcoming' : 'finished')}${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${tx}</div></div>${t(a)}</div>`;
 }
@@ -554,7 +670,7 @@ function egBB() {
   if (!L.length) return '';
   const card = m => { const st = new Date(m.t), fin = m.s != null, live = !fin && now >= st && now < +st + 2.5 * 3600e3, late = !fin && now >= +st + 2.5 * 3600e3;
     const sc = fin ? `${m.s[1]} : ${m.s[0]}` : '-';
-    const tx = fin ? 'انتهت' : live ? 'جارية الآن' : late ? 'بانتظار النتيجة' : st.toLocaleDateString('ar-EG', { day: 'numeric', month: 'numeric' }) + ' ' + st.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' });
+    const tx = fin ? 'انتهت' : live ? 'جارية الآن' : late ? 'بانتظار النتيجة' : st.toLocaleDateString(LOC, { day: 'numeric', month: 'numeric' }) + ' ' + st.toLocaleTimeString(LOC, { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' });
     return `<div class="hml" style="margin-top:8px">${esc(m.lg)}</div><div class="m ${fin ? 'finished' : live ? 'live' : 'upcoming'}" style="cursor:default;margin-top:0">${BDG(fin ? 'finished' : live ? 'live' : 'upcoming')}${bbT(m.h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${tx}</div></div>${bbT(m.a)}<div class="goals" style="text-align:center">${esc(m.v)}</div></div>`; };
   return `<div class="hh"><b>الدوري المصري للسلة</b></div><div style="padding:0 12px">${L.map(card).join('')}</div><div class="empty" style="font-size:12px;padding:6px">المصدر: الاتحاد المصري لكرة السلة (صفحته على فيسبوك وجدول موقعه الرسمي)</div>`;
 }
@@ -617,8 +733,8 @@ async function bracketHTML(slug, ent) {
     const A = tm(f.home, tie), Bs = tm(f.away, tie), sA = A.reduce((x, y) => x + (y || 0), 0), sB = Bs.reduce((x, y) => x + (y || 0), 0), live = tie.find(m => m.status === 'live');
     const row = (x, sc, win) => `<div class="r"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'"><span${win ? ' style="color:#fff;font-weight:800"' : ''}>${esc(x.name)}</span><b>${sc.join(' · ')}</b></div>`;
     const nx = tie.find(m => m.status === 'upcoming');
-    return `<div class="bm" data-m="${esc(slug)}|${esc((live || nx || tie[tie.length - 1]).id)}" style="cursor:pointer">${row(f.home, A, fin && sA > sB)}${row(f.away, Bs, fin && sB > sA)}${nx ? '<div style="color:var(--mut);font-size:11px;text-align:center">' + esc(new Date(nx.date).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })) + '</div>' : ''}${live ? '<div style="color:var(--red);font-size:11px;text-align:center">● مباشر</div>' : ''}</div>`; };
-  const gCol = gEnt ? `<div class="bc"><h4>${esc(PHN[gEnt.label] || gEnt.label)}</h4><div class="bb" style="height:${MAXH}px"><div class="bg" style="margin:auto 0">${esc(new Date(gEnt.startDate).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) + ' - ' + new Date(gEnt.endDate).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }))}<br><button data-lsub="st">عرض ترتيب المجموعات</button></div></div></div>` : '';
+    return `<div class="bm" data-m="${esc(slug)}|${esc((live || nx || tie[tie.length - 1]).id)}" style="cursor:pointer">${row(f.home, A, fin && sA > sB)}${row(f.away, Bs, fin && sB > sA)}${nx ? '<div style="color:var(--mut);font-size:11px;text-align:center">' + esc(new Date(nx.date).toLocaleDateString(LOC, { day: 'numeric', month: 'short' })) + '</div>' : ''}${live ? '<div style="color:var(--red);font-size:11px;text-align:center">● مباشر</div>' : ''}</div>`; };
+  const gCol = gEnt ? `<div class="bc"><h4>${esc(PHN[gEnt.label] || gEnt.label)}</h4><div class="bb" style="height:${MAXH}px"><div class="bg" style="margin:auto 0">${esc(new Date(gEnt.startDate).toLocaleDateString(LOC, { day: 'numeric', month: 'short' }) + ' - ' + new Date(gEnt.endDate).toLocaleDateString(LOC, { day: 'numeric', month: 'short' }))}<br><button data-lsub="st">عرض ترتيب المجموعات</button></div></div></div>` : '';
   const cols = rounds.map((r, i) => `<div class="bc${conn(i) ? ' cn' : ''}${i > 0 && conn(i - 1) ? ' ci' : ''}${r.nm === 'النهائي' ? ' fin' : ''}"><h4>${r.nm === 'النهائي' ? '🏆 ' : ''}${esc(r.nm)}</h4><div class="bb" style="height:${MAXH}px">${slots[i].map(t => `<div class="sl">${t ? tieCard(t) : '<div class="bm ph0">؟<br>لم يُحدد بعد</div>'}</div>`).join('')}</div></div>`).join('');
   return '<div class="br">' + gCol + cols + '</div><div class="empty" style="font-size:12px;padding:6px 12px">' + (cut ? 'تظهر آخر 5 أدوار فقط. ' : '') + 'مباريات الذهاب والإياب تُجمع في خانة واحدة. الخانات الفارغة لم تُحدد بعد، وخطوط الربط ترتبط بالمباراة التي تأهل منها الفريق.</div>';
 }
@@ -673,7 +789,7 @@ async function renderClub() {
   let c; try { c = await api('/api/club/' + club.slug + '/' + club.id); } catch (e) { main.innerHTML = back + '<div class="empty">تعذر تحميل مباريات الفريق</div>'; return; }
   const L = lgOf(club.slug), up = c.matches.filter(m => m.status !== 'finished').sort((a, b) => new Date(a.date) - new Date(b.date)), dn = c.matches.filter(m => m.status === 'finished').sort((a, b) => new Date(b.date) - new Date(a.date));
   const row = m => { MM[club.slug + '|' + m.id] = MM[club.slug + '|' + m.id] || { ...m, league: club.slug, goals: [] };
-    const d = new Date(m.date), ds = d.toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' }), tm = d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const d = new Date(m.date), ds = d.toLocaleDateString(LOC, { weekday: 'short', day: 'numeric', month: 'short' }), tm = d.toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' });
     const sc = m.status === 'upcoming' ? tm : `${m.away.score ?? 0} : ${m.home.score ?? 0}`;
     const tt = x => `<span class="tm"><img src="${esc(x.logo)}" alt="" onerror="this.style.visibility='hidden'">${String(x.id) === String(club.id) ? '<b>' + esc(x.name) + '</b>' : esc(x.name)}</span>`;
     return `<div class="cr" data-m="${esc(club.slug)}|${esc(m.id)}"><span class="dt">${esc(ds)}<br>${m.status === 'live' ? '<span style="color:var(--red)">● مباشر ' + esc(m.clock) + '</span>' : esc(tm)}</span>${tt(m.home)}<span class="rs">${sc}</span>${tt(m.away)}</div>`; };
@@ -690,7 +806,7 @@ async function renderArticle() {
   const title = it.title || await trOne((h && h.headline) || ''), img = it.image || (h && h.images && h.images[0] && h.images[0].url) || '';
   const src = (h && h.byline) || it.byline || 'ESPN', pub = (h && h.published) || it.published;
   const body = paras.length ? paras.map(t => `<p class="ap" dir="auto">${esc(t)}</p>`).join('') : `<p class="ap" dir="auto">${esc((h && h.description) || it.summary || '')}</p><div class="empty" style="font-size:12px">النص الكامل غير متاح، هذا ملخص الخبر</div>`;
-  main.innerHTML = back + `<div class="art">${img ? `<img src="${esc(img)}" alt="">` : ''}<h1>${esc(title)}</h1><div class="meta">المصدر: ${esc(src)} · ESPN${pub ? ' · ' + esc(new Date(pub).toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' })) : ''}</div>${paras.length ? '<button class="chip" id="trb" style="margin:6px 0 10px">ترجمة النص للعربية</button><div class="meta" style="margin-top:-4px">النص الأصلي بالإنجليزية، الترجمة آلية</div>' : ''}<div id="abody">${body}</div></div>`;
+  main.innerHTML = back + `<div class="art">${img ? `<img src="${esc(img)}" alt="">` : ''}<h1>${esc(title)}</h1><div class="meta">المصدر: ${esc(src)} · ESPN${pub ? ' · ' + esc(new Date(pub).toLocaleDateString(LOC, { day: 'numeric', month: 'long', year: 'numeric' })) : ''}</div>${paras.length ? '<button class="chip" id="trb" style="margin:6px 0 10px">ترجمة النص للعربية</button><div class="meta" style="margin-top:-4px">النص الأصلي بالإنجليزية، الترجمة آلية</div>' : ''}<div id="abody">${body}</div></div>`;
   const tb = document.getElementById('trb'); if (tb) tb.onclick = async () => { tb.disabled = true; tb.textContent = 'جاري الترجمة...'; const els = [...document.querySelectorAll('#abody .ap')]; for (const el of els.slice(0, 14)) { if (!document.body.contains(el)) return; const t = await trOne(el.textContent); el.textContent = t; el.setAttribute('dir', 'auto'); } try { localStorage.setItem('varo_tr', JSON.stringify(trCache)); } catch (e) { } tb.textContent = els.length > 14 ? 'تمت ترجمة أول 14 فقرة' : 'تمت الترجمة'; };
 }
 async function render() {
