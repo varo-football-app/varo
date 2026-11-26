@@ -499,6 +499,26 @@ function icard(e) {
   const t = x => `<div class="t"><img src="${esc(x.team.logo || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.team.shortDisplayName || x.team.displayName)}</span></div>`;
   return `<div class="m ${cls}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${tx}</div></div>${t(a)}</div>`;
 }
+
+const EVB = 'https://admin.egyvbf.com/api/';
+const evbSets = m => { const a = String(m.club1Points || '').split(',').map(Number), b = String(m.club2Points || '').split(',').map(Number); let x = 0, y = 0, ln = []; a.forEach((v, i) => { const w = b[i]; if (v || w) { if (v > w) x++; else if (w > v) y++; ln.push(v + '-' + w); } }); return { x, y, ln }; };
+function evbCard(m, done) {
+  const t = (n, lg) => `<div class="t"><img src="${esc(lg || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(n)}</span></div>`;
+  const st = done ? evbSets(m) : null, sc = done ? `${st.y} : ${st.x}` : '-';
+  const sub = done ? 'انتهت' : esc((m.date || '').replace(/^\d{4} /, '') + ' · ' + (m.time || ''));
+  const det = done && st.ln.length ? `<div class="goals" style="text-align:center;direction:ltr">${esc(st.ln.join('  ·  '))}</div>` : '';
+  return `<div class="m ${done ? 'finished' : 'upcoming'}" style="cursor:default">${t(m.club1Name, m.club1Logo)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${sub}</div></div>${t(m.club2Name, m.club2Logo)}${det}</div>`;
+}
+async function egVb() {
+  try {
+    const [la, up, ss] = await Promise.all([get(EVB + 'matches/latest?limit=12'), get(EVB + 'matches/up-next?limit=12'), get(EVB + 'seasonsList')]);
+    const grp = (arr, done) => { const o = {}; (arr.extra || []).forEach(m => { (o[m.tournament] = o[m.tournament] || []).push(m); }); return Object.entries(o).map(([k, v]) => `<div class="lg">${esc(k)}</div>${v.map(m => evbCard(m, done)).join('')}`).join(''); };
+    let st = ''; try { const sid = ((ss.extra || []).find(x => x.isActive) || (ss.extra || [])[0] || {}).id; const tr = await get(EVB + 'tournaments?seasonId=' + sid); for (const tn of (tr.extra || [])) { const g = await get(EVB + 'tournaments/' + tn.id + '/groups-result'); const rows = ((g.extra || [])[0] || {}).results || []; rows.sort((a, b) => b.totalPoints - a.totalPoints || parseFloat(b.wonToLostRoundRatio) - parseFloat(a.wonToLostRoundRatio)); if (rows.length) st += `<div class="lg">ترتيب ${esc(tn.name)}</div><div class="m" style="display:block;padding:6px 10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="color:var(--mut)"><td>#</td><td>الفريق</td><td>لعب</td><td>فاز</td><td>نقاط</td></tr>${rows.map((r, i) => `<tr style="border-top:1px solid #323445"><td style="padding:7px 2px">${i + 1}</td><td>${esc(r.label)}</td><td>${r.playedMatches}</td><td>${r.totalWon}</td><td><b>${r.totalPoints}</b></td></tr>`).join('')}</table></div>`; } } catch (e) { }
+    const nu = grp(up, false), nl = grp(la, true);
+    if (!nu && !nl && !st) return '';
+    return `<div class="hh"><b>الدوري المصري للكرة الطائرة</b></div>${nu ? '<div class="lg" style="color:var(--red)">المباريات القادمة</div>' + nu : ''}${nl ? '<div class="lg" style="color:var(--red)">آخر النتائج</div>' + nl : ''}${st}<div class="empty" style="font-size:12px;padding:6px">المصدر: الاتحاد المصري للكرة الطائرة (egyvbf.com)</div><div class="hh"><b>الكرة الطائرة الجامعية الأمريكية</b></div>`;
+  } catch (e) { return ''; }
+}
 async function renderIndoor() {
   const sp = ISP[isport] || ISP.bb;
   const bar = `<div class="chips" style="padding:10px 12px 0">${Object.entries(ISP).map(([k, v]) => `<button class="chip ${k === isport ? 'on' : ''}" data-isp="${k}">${v.n}</button>`).join('')}</div>`;
@@ -507,12 +527,13 @@ async function renderIndoor() {
   if (!window.SILENT) main.innerHTML = bar + hd + '<div class="spw"><div class="spin"></div></div>';
   const t0 = new Date(), d1 = new Date(t0), d2 = new Date(t0); d1.setDate(d1.getDate() + 1); d2.setDate(d2.getDate() + 2); const qs = ['', '&dates=' + ds8(d1), '&dates=' + ds8(d2)];
   const W = { in: 0, pre: 1, post: 2 };
+  const egH = isport === 'vb' ? await egVb() : '';
   const res = await Promise.allSettled(sp.ep.map(([ep, name]) => Promise.allSettled(qs.map(q => get(B + '/site/v2/sports/' + ep + '/scoreboard?limit=100' + q))).then(rs => { const seen = new Set(), ev = []; rs.forEach(r => { if (r.status === 'fulfilled') (r.value.events || []).forEach(e => { if (!seen.has(e.id)) { seen.add(e.id); ev.push(e); } }); }); return { name, ev }; })));
   let newsItems = []; try { if (sp.news) { const j = await get(B + '/site/v2/sports/' + sp.news + '/news?limit=12'); newsItems = (j.articles || []).filter(x => x.headline).slice(0, 8).map(x => ({ id: String(x.id), title: x.headline, image: ((x.images || []).find(i => i.url && !/stitcher/.test(i.url)) || {}).url || '', summary: x.description || '', published: x.published })); newsItems = await trItems(newsItems); newsItems.forEach(n => { NW[n.id] = n; }); } } catch (e) { }
   if (tab !== 'indoor' || isport !== (Object.keys(ISP).find(k => ISP[k] === sp)) || article) return;
   const secs = res.filter(r => r.status === 'fulfilled' && r.value.ev.length).map(r => { const ev = r.value.ev.sort((x, y) => W[x.status.type.state] - W[y.status.type.state] || (x.status.type.state === 'post' ? new Date(y.date) - new Date(x.date) : new Date(x.date) - new Date(y.date))).slice(0, 15); return `<div class="lg">${esc(r.value.name)}</div>${ev.map(icard).join('')}`; }).join('');
   const nw = newsItems.length ? `<div class="hh"><b>آخر الأخبار</b></div>` + newsItems.map(n => `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer">${n.image ? `<img src="${esc(n.image)}" alt="" loading="lazy">` : ''}<div>${esc(n.title)}</div></div>`).join('') : '';
-  main.innerHTML = bar + hd + (secs || '<div class="empty">لا توجد مباريات متاحة في الأيام القريبة</div>') + nw + '<div class="empty" style="font-size:12px;padding:10px">المصدر: ESPN' + (isport === 'vb' ? ' · تغطية الكرة الطائرة المتاحة هي الدوري الجامعي الأمريكي فقط' : '') + '</div>';
+  main.innerHTML = bar + hd + egH + (secs || '<div class="empty">لا توجد مباريات متاحة في الأيام القريبة</div>') + nw + '<div class="empty" style="font-size:12px;padding:10px">المصدر: ESPN' + (isport === 'vb' ? ' · تغطية الكرة الطائرة المتاحة هي الدوري الجامعي الأمريكي فقط' : '') + '</div>';
 }
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
