@@ -1,0 +1,19 @@
+name: news
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 fetch_news.py
+      - name: commit if changed
+        run: |
+          git config user.name "varo-news-bot"
+          git config user.email "varo-news-bot@users.noreply.github.com"
+          git add news.json
+          git diff --cached --quiet || (git commit -m "Update news" && git push)
