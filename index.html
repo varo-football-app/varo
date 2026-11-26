@@ -468,8 +468,9 @@ function drawList() {
 }
 let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
-function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx, article }; history.replaceState(null, '', location.pathname + location.search + '#' + encodeURIComponent(JSON.stringify(o))); }
-(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; } catch (e) { } })();
+function saveState() { const o = { tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL }; const k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k); if (window.NOPUSH || !history.state || history.state.k === k) history.replaceState({ k, o }, '', u); else history.pushState({ k, o }, '', u); }
+addEventListener('popstate', e => { const o = e.state && e.state.o; if (!o) return; tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; hist = []; fxOn = true; scrollTo(0, 0); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); try { chips(); } catch (x) { } window.NOPUSH = true; try { render(); } finally { window.NOPUSH = false; } });
+(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; } catch (e) { } })();
 const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
