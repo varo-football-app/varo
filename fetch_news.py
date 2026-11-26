@@ -96,6 +96,7 @@ def dedupe2(l):
             seen.add(x["id"]); o.append(x)
     return o
 ah = ahly(); zm = items("https://www.zamaleksc.com/feed.xml", "نادي الزمالك (الموقع الرسمي)", "zamalek")
+IL_RE = re.compile(r'hapoel|maccabi|beitar|israel|sakhnin|هبوعيل|هابويل|مكابي|ميكابي|بيتار|إسرائيل|اسرائيل|سخنين', re.I)
 cand = []
 for x in mix(ah[:12], zm[:12]):
     cand.append({"id": x["id"], "src_title": x["title"], "text": x["summary"] or ahly_text(x["url"]), "image": x["image"], "source": x["source"], "grp": "egypt"})
@@ -103,6 +104,7 @@ for x in espn()[:30]:
     x["grp"] = "world"; cand.append(x)
 if len(cand) < 5:
     print("too few candidates, keeping old file", file=sys.stderr); sys.exit(0)
+cand = [c for c in cand if not IL_RE.search(c['src_title'] + ' ' + c['text'])]
 rw = json.load(open("rewrites.json", encoding="utf-8")) if os.path.exists("rewrites.json") else {}
 res = {"egypt": [], "world": [], "arab": []}
 for c in cand:
