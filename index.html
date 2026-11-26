@@ -95,7 +95,7 @@ nav a.fb{flex:0 0 52px;display:flex;align-items:center;justify-content:center;co
 .ft{margin:22px 12px 8px;padding-top:16px;border-top:1px dashed #3b3d50;text-align:center}.fbb{display:flex;align-items:center;justify-content:center;gap:10px;background:#1877f2;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px;border-radius:14px}.fbb:active{transform:scale(.98)}.cp{color:var(--mut);font-size:12px;margin-top:10px}.hmr{padding-bottom:6px}.hm{flex:0 0 78%;scroll-snap-align:center}.hm .m{margin:0}.hml{color:var(--mut);font-size:12px;margin:0 4px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#d8232a"><link rel="icon" href="4-icon-192.png"><link rel="apple-touch-icon" href="4-icon-192.png"></head>
 <body><header><div class="logo" id="home" role="button" aria-label="الرئيسية"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-inline-end:8px;color:var(--red)"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><b>ڤارو</b> VARO</div><div id="lsel" class="dd"><button type="button" class="ddb" aria-haspopup="listbox"><span class="ddt"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddp" role="listbox"></div></div></header>
 <main id="main"></main><footer class="ft"><a class="fbb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg><span>Follow</span></a><div class="cp">ڤارو VARO</div></footer>
-<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button><a class="fb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer" aria-label="صفحة ڤارو على فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></a></nav>
+<nav><button data-tab="matches" class="on">المباريات</button><button data-tab="leagues" style="line-height:1.15;font-size:11.5px;white-space:normal">المسابقات والبطولات</button><button data-tab="standings">الترتيب</button><button data-tab="news">آخر الأخبار</button><button data-tab="indoor">الصالات</button><a class="fb" href="https://www.facebook.com/profile.php?id=61596525194911" target="_blank" rel="noopener noreferrer" aria-label="صفحة ڤارو على فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></a></nav>
 <script>const LEAGUES = [
   { slug: 'egy.1', name: 'الدوري المصري', src: 'tsdb', tsdbId: '4829' },
   { slug: 'uae.1', name: 'دوري المحترفين الإماراتي', src: 'tm', tm: 'UAE1' },
@@ -466,9 +466,9 @@ function drawList() {
   el.innerHTML = part ||
    `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
-let grpIdx = 0, article = null; const NW = {};
+let isport = 'bb'; let grpIdx = 0, article = null; const NW = {};
 let hist = [], lg = null, lgSub = 'st', player = null, club = null;
-const curO = () => ({ tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL, d: dayOff });
+const curO = () => ({ isp: isport, tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL, d: dayOff });
 function saveState() { const o = curO(), k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k), cs = history.state || {};
   if (window.NOPUSH || !history.state || cs.k === k) history.replaceState({ k, o, i: cs.i || 0, y: cs.y || 0, ov: cs.ov }, '', u);
   else if (cs.ov) history.replaceState({ k, o, i: cs.i || 0, y: 0 }, '', u);
@@ -478,11 +478,39 @@ function closeOv() { const d = document.querySelector('.dd.open'); if (d) d.clas
 function openOv() { const cs = history.state || {}; if (!cs.ov) { history.pushState({ ...cs, ov: 1, i: (cs.i || 0) + 1 }, ''); } }
 addEventListener('popstate', e => { const st = e.state, o = st && st.o; const d = document.querySelector('.dd.open'); if (d) d.classList.remove('open'); if (!o) return;
   if (JSON.stringify(curO()) === st.k) { return; }
-  tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; dayOff = o.d || 0; hist = []; fxOn = true;
+  tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; dayOff = o.d || 0; isport = o.isp || 'bb'; hist = []; fxOn = true;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); try { chips(); } catch (x) { } window.NOPUSH = true; let pr; try { pr = render(); } finally { window.NOPUSH = false; } Promise.resolve(pr).then(() => setTimeout(() => scrollTo(0, st.y || 0), 60)); });
-(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; } catch (e) { } })();
+(function () { try { const h = decodeURIComponent(location.hash.slice(1)); if (!h) return; const o = JSON.parse(h); if (o.tab) tab = o.tab==='egypt'?'news':o.tab; if (o.league) league = o.league; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; isport = o.isp || 'bb'; } catch (e) { } })();
 (function () { if (history.state) return; if (tab !== 'matches' || league !== 'all' || article || detail || player || club || lg || window.SHOWALL) { const r = { tab: 'matches', league: 'all', lg: null, lgSub: 'st', detail: null, player: null, club: null, grpIdx: 0, article: null, sa: false, d: 0 }; history.replaceState({ k: JSON.stringify(r), o: r, i: 0, y: 0 }, '', location.pathname + location.search); } })();
 const fmt = v => v === undefined || v === null ? '-' : (Math.round(v * 10) / 10).toString();
+
+const ISP = { bb: { n: 'كرة السلة', ep: [['basketball/nba', 'دوري السلة الأمريكي NBA'], ['basketball/euroleague', 'اليورو ليج'], ['basketball/fiba', 'كأس العالم FIBA'], ['basketball/wnba', 'دوري السلة الأمريكي للسيدات WNBA']], news: 'basketball/nba' },
+  vb: { n: 'الكرة الطائرة', ep: [['volleyball/womens-college-volleyball', 'الكرة الطائرة الجامعية الأمريكية - سيدات (NCAA)'], ['volleyball/mens-college-volleyball', 'الكرة الطائرة الجامعية الأمريكية - رجال (NCAA)']], news: 'volleyball/womens-college-volleyball' },
+  hb: { n: 'كرة اليد', ep: [], news: null } };
+const ds8 = d => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+function icard(e) {
+  const c = e.competitions && e.competitions[0]; if (!c) return ''; const h = c.competitors.find(x => x.homeAway === 'home') || c.competitors[0], a = c.competitors.find(x => x.homeAway === 'away') || c.competitors[1]; if (!h || !a) return '';
+  const st = e.status.type.state, up = st === 'pre', cls = st === 'in' ? 'live' : up ? 'upcoming' : 'finished';
+  const dt = new Date(e.date), sc = up ? '-' : `${a.score ?? 0} : ${h.score ?? 0}`;
+  const tx = st === 'in' ? 'مباشر ' + esc(e.status.type.shortDetail || '') : up ? dt.toLocaleDateString('ar-EG', { day: 'numeric', month: 'numeric' }) + ' ' + dt.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit' }) : 'انتهت';
+  const t = x => `<div class="t"><img src="${esc(x.team.logo || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(x.team.shortDisplayName || x.team.displayName)}</span></div>`;
+  return `<div class="m ${cls}" style="cursor:default">${t(h)}<div><div class="sc">${sc}</div><div class="st" style="text-align:center">${tx}</div></div>${t(a)}</div>`;
+}
+async function renderIndoor() {
+  const sp = ISP[isport] || ISP.bb;
+  const bar = `<div class="chips" style="padding:10px 12px 0">${Object.entries(ISP).map(([k, v]) => `<button class="chip ${k === isport ? 'on' : ''}" data-isp="${k}">${v.n}</button>`).join('')}</div>`;
+  const hd = `<div class="hh"><b>${sp.n}</b></div>`;
+  if (!sp.ep.length) { main.innerHTML = bar + hd + '<div class="empty">لا يوجد حاليا مصدر بيانات موثوق لمباريات وأخبار كرة اليد، لذلك لا نعرض أي بيانات هنا حتى نضيف مصدرا مؤكدا.</div>'; return; }
+  if (!window.SILENT) main.innerHTML = bar + hd + '<div class="spw"><div class="spin"></div></div>';
+  const t0 = new Date(), a = new Date(t0), b = new Date(t0); a.setDate(a.getDate() - 1); b.setDate(b.getDate() + 3); const dr = ds8(a) + '-' + ds8(b);
+  const W = { in: 0, pre: 1, post: 2 };
+  const res = await Promise.allSettled(sp.ep.map(([ep, name]) => get(B + '/site/v2/sports/' + ep + '/scoreboard?dates=' + dr + '&limit=100').then(j => ({ name, ev: (j.events || []).slice() }))));
+  let newsItems = []; try { if (sp.news) { const j = await get(B + '/site/v2/sports/' + sp.news + '/news?limit=12'); newsItems = (j.articles || []).filter(x => x.images && x.images[0] && x.images[0].url && x.headline).slice(0, 6).map(x => ({ id: String(x.id), title: x.headline, image: x.images[0].url, summary: x.description || '', published: x.published })); newsItems = await trItems(newsItems); newsItems.forEach(n => { NW[n.id] = n; }); } } catch (e) { }
+  if (tab !== 'indoor' || isport !== (Object.keys(ISP).find(k => ISP[k] === sp)) || article) return;
+  const secs = res.filter(r => r.status === 'fulfilled' && r.value.ev.length).map(r => { const ev = r.value.ev.sort((x, y) => W[x.status.type.state] - W[y.status.type.state] || (x.status.type.state === 'post' ? new Date(y.date) - new Date(x.date) : new Date(x.date) - new Date(y.date))).slice(0, 15); return `<div class="lg">${esc(r.value.name)}</div>${ev.map(icard).join('')}`; }).join('');
+  const nw = newsItems.length ? `<div class="hh"><b>آخر الأخبار</b></div>` + newsItems.map(n => `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt="" loading="lazy"><div>${esc(n.title)}</div></div>`).join('') : '';
+  main.innerHTML = bar + hd + (secs || '<div class="empty">لا توجد مباريات في الأيام القريبة (من أمس حتى بعد 3 أيام)</div>') + nw + '<div class="empty" style="font-size:12px;padding:10px">المصدر: ESPN' + (isport === 'vb' ? ' · تغطية الكرة الطائرة المتاحة هي الدوري الجامعي الأمريكي فقط' : '') + '</div>';
+}
 async function renderPlayer() {
   main.innerHTML = '<div class="empty">جاري التحميل...</div>';
   const back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
@@ -615,6 +643,7 @@ async function render() {
   if (article) return renderArticle();
   if (player) return renderPlayer();
   if (club) return renderClub();
+  if (tab === 'indoor') return renderIndoor();
   if (tab === 'leagues') { if (lg) return renderLeague(); return drawLeagues(); }
   if (detail) return renderDetail();
   if (!window.SILENT) main.innerHTML = '<div class="empty">جاري التحميل...</div>';
@@ -644,7 +673,7 @@ function chips() {
   let opts;
   if (tab === 'matches') { const have = new Map(allDay.map(d => [d.league.slug, d.matches.length])); opts = ordered.filter(l => have.has(l.slug)).map(l => ({ slug: l.slug, name: l.name + ' (' + have.get(l.slug) + ')' })); if (league !== 'all' && !have.has(league)) league = 'all'; }
   else opts = ordered.map(l => ({ slug: l.slug, name: l.name }));
-  $('#lsel').style.display = tab === 'leagues' ? 'none' : '';
+  $('#lsel').style.display = (tab === 'leagues' || tab === 'indoor') ? 'none' : ''; { const qq = document.getElementById('q'); if (qq && qq.parentNode) qq.parentNode.style.display = tab === 'indoor' ? 'none' : ''; }
   const sel = $('#lsel'), all = tab === 'standings' ? opts : [{ slug: 'all', name: 'كل البطولات' }, ...opts]; const effL = tab === 'standings' && league === 'all' ? 'eng.1' : league;
   const html = all.map(l => `<div class="opt${l.slug === effL ? ' on' : ''}" role="option" data-v="${l.slug}">${(() => { const m = /^(.*) \((\d+)\)$/.exec(l.name); return m ? `<span>${esc(m[1])}</span><small>${m[2]}</small>` : `<span>${esc(l.name)}</span>`; })()}<i class="ck"></i></div>`).join('');
   sel.querySelector('.ddp').innerHTML = html;
@@ -657,6 +686,7 @@ document.getElementById('home').addEventListener('click', () => { window.SHOWALL
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
   if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p],[data-t],[data-grp],[data-n]')) fxOn = true;
+  const isp = e.target.closest('[data-isp]'); if (isp) { isport = isp.dataset.isp; fxOn = true; scrollTo(0, 0); return render(); }
   if (e.target.closest('[data-seeall]')) { window.SHOWALL = true; fxOn = true; scrollTo(0, 0); return render(); }
   const gn = e.target.closest('[data-gonews]'); if (gn) { document.querySelector('nav [data-tab=news]').click(); return; }
   const nw = e.target.closest('[data-n]'); if (nw) { article = { id: nw.dataset.n }; scrollTo(0, 0); return render(); }
