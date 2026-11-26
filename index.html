@@ -472,10 +472,10 @@ const curO = () => ({ tab, league, lg, lgSub, detail, player, club, grpIdx, arti
 function saveState() { const o = curO(), k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k), cs = history.state || {};
   if (window.NOPUSH || !history.state || cs.k === k) history.replaceState({ k, o, i: cs.i || 0, y: cs.y || 0, ov: cs.ov }, '', u);
   else if (cs.ov) history.replaceState({ k, o, i: cs.i || 0, y: 0 }, '', u);
-  else { history.replaceState({ ...cs, y: scrollY }, ''); history.pushState({ k, o, i: (cs.i || 0) + 1, y: 0 }, '', u); } }
+  else { history.pushState({ k, o, i: (cs.i || 0) + 1, y: 0 }, '', u); } }
 let _st=0; addEventListener('scroll', () => { clearTimeout(_st); _st = setTimeout(() => { if (history.state && !window.NOPUSH) history.replaceState({ ...history.state, y: scrollY }, ''); }, 120); }, { passive: true });
 function closeOv() { const d = document.querySelector('.dd.open'); if (d) d.classList.remove('open'); if (history.state && history.state.ov) history.back(); }
-function openOv() { const cs = history.state || {}; if (!cs.ov) { history.replaceState({ ...cs, y: scrollY }, ''); history.pushState({ ...cs, ov: 1, i: (cs.i || 0) + 1 }, ''); } }
+function openOv() { const cs = history.state || {}; if (!cs.ov) { history.pushState({ ...cs, ov: 1, i: (cs.i || 0) + 1 }, ''); } }
 addEventListener('popstate', e => { const st = e.state, o = st && st.o; const d = document.querySelector('.dd.open'); if (d) d.classList.remove('open'); if (!o) return;
   if (JSON.stringify(curO()) === st.k) { return; }
   tab = o.tab || 'matches'; league = o.league || 'all'; lg = o.lg || null; lgSub = o.lgSub || 'st'; detail = o.detail || null; player = o.player || null; club = o.club || null; grpIdx = o.grpIdx || 0; article = o.article || null; window.SHOWALL = !!o.sa; dayOff = o.d || 0; hist = []; fxOn = true;
