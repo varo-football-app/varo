@@ -500,7 +500,7 @@ async function playerOf(slug,id){
   return{name:a.displayName||'',team:a.team&&a.team.displayName||'',teamLogo:a.team&&a.team.logos&&a.team.logos[0]&&a.team.logos[0].href||'',pos:a.position&&a.position.displayName||'',posAbbr:a.position&&a.position.abbreviation||'',jersey:a.jersey||'',age:a.age||'',nat:a.citizenship||'',flag:a.flag&&a.flag.href||'',height:a.displayHeight||'',year:yr,stats,hasStats:Object.keys(stats).length>0};
 }
 let _dom = null, _wd = null;
-async function domNews() { try { const r = await fetch('news.json?v=' + (window._nb || Math.floor(Date.now() / 600000))); const j = await r.json(); const mp = x => ({ id: x.id, title: x.title, summary: '', body: x.body || '', image: x.image, url: '', published: '', byline: x.source || '' }); _dom = (j.egypt || []).map(mp); _wd = (j.world || []).map(mp); } catch (e) { if (!_dom) { _dom = []; _wd = []; } } return _dom; }
+async function domNews() { try { const r = await fetch('news.json?v=' + (window._nb || Math.floor(Date.now() / 600000))); const j = await r.json(); const mp = x => ({ id: x.id, title: x.title, summary: '', body: x.body || '', image: x.image, url: '', published: '', byline: x.source || '' }); const fr = x => !x.ts || (Date.now() - Date.parse(x.ts)) < 864e5; _dom = (j.egypt || []).filter(fr).map(mp); _wd = (j.world || []).filter(fr).map(mp); } catch (e) { if (!_dom) { _dom = []; _wd = []; } } return _dom; }
 async function worldNews() { await domNews(); return _wd || []; }
 async function apiFetch(u0){const [u,qs]=u0.split('?');const q=new URLSearchParams(qs||'').get('date');
   if(u==='/api/leagues')return LEAGUES;
