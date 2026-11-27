@@ -52,6 +52,18 @@ header{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 6p
 table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mut);font-weight:600}td,th{padding:9px 5px;text-align:center}td.n{text-align:right;display:flex;gap:8px;align-items:center}td img{width:20px;height:20px}
 tr+tr{border-top:1px solid #2e3040}.pts{font-weight:800;color:var(--red)}
 .tbl{background:var(--card);margin:10px 12px;border-radius:14px;padding:6px 10px}
+.sx{margin:10px 12px;background:var(--card);border-radius:16px;padding:4px 6px 6px;overflow:hidden}
+.sxr{display:grid;grid-template-columns:30px 1fr 30px 26px 26px 26px 38px 40px;align-items:center;gap:2px;padding:8px 6px;font-size:13px;text-align:center;border-radius:10px;position:relative}
+.sx.ng .sxr{grid-template-columns:30px 1fr 32px 28px 28px 28px 42px}
+.sxr+.sxr{border-top:1px solid rgba(128,128,150,.15)}
+.sxh{font-size:11px;color:var(--mut);font-weight:700;border-bottom:1px solid rgba(128,128,150,.3);margin-bottom:2px}
+.sxr .xn{display:flex;align-items:center;gap:8px;text-align:right;min-width:0}.sxr .xn img{width:24px;height:24px;object-fit:contain;flex:none}.sxr .xn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sxr .xk{font-weight:800;color:var(--mut)}.sxr .xg{color:var(--mut);font-size:12px;direction:ltr}.sxr .xp{font-weight:800;color:var(--tx);background:rgba(229,57,53,.14);border-radius:8px;padding:3px 0}.sxh .xp{background:none;color:var(--mut)}
+.sxr.s1{background:linear-gradient(90deg,rgba(229,57,53,.16),transparent)}.sxr.s1 .xk{color:var(--red)}.sxr.s1 .xp{background:var(--red);color:#fff}
+.sxr.zc::before,.sxr.zr::before,.sxr.s1::before{content:"";position:absolute;inset-inline-start:0;top:20%;bottom:20%;width:3px;border-radius:2px;background:var(--red)}
+.sxr.zc::before{background:#2fbf71}.sxr.zr::before{background:#e53935}.sxr.zc .xk{color:#2fbf71}.sxr.zr .xk{color:#e53935}
+.sxl{display:flex;align-items:center;gap:6px;justify-content:center;font-size:11px;color:var(--mut);padding:2px 0 8px}.sxl i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-inline-start:10px}.sxl i.zc{background:#2fbf71}.sxl i.zr{background:#e53935}
+html[data-theme=light] .sx{background:#fff}
 .news{display:flex;gap:10px;background:var(--card);margin:8px 12px;border-radius:14px;overflow:hidden;color:inherit;text-decoration:none}
 .news img{width:110px;height:90px;object-fit:cover}.news div{padding:8px 4px;font-size:14px;line-height:1.4}
 .empty{text-align:center;color:var(--mut);padding:40px}
@@ -854,7 +866,13 @@ function stGroups(groups, slug) {
   const sw = groups.length > 1 ? '<div class="gsw">' + groups.map((g, i) => `<button data-grp="${i}" class="${i === grpIdx ? 'on' : ''}">${esc(g.name || 'مجموعة ' + (i + 1))}</button>`).join('') + '</div>' : '';
   return sw + stTable(groups[grpIdx].rows, slug);
 }
-const stTable = (rows, slug) => `<div class="tbl"><table><tr><th>#</th><th style="text-align:right">الفريق</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>نقاط</th></tr>${rows.slice(0, 40).map(r => `<tr><td>${r.rank}</td><td class="n"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="" onerror="this.style.visibility='hidden'">${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td class="pts">${r.points}</td></tr>`).join('')}</table></div>`;
+const STZ = { 'eng.1': [4, 3], 'esp.1': [4, 3], 'ita.1': [4, 3], 'ger.1': [4, 2], 'fra.1': [4, 2] };
+const stTable = (rows, slug) => { const L = rows.slice(0, 40), n = L.length, z = STZ[slug] && n >= 16 ? STZ[slug] : null, hasGd = L.some(r => r.gd !== undefined && r.gd !== null && r.gd !== '');
+  const fm = v => { const x = String(v ?? '').replace('+', ''); return x === '' ? '-' : (Number(x) > 0 ? '+' + x : x); };
+  const row = (r, i) => { const rk = Number(r.rank) || i + 1, cls = rk === 1 ? ' s1' : z && rk <= z[0] ? ' zc' : z && rk > n - z[1] ? ' zr' : '';
+    return `<div class="sxr${cls}"><span class="xk">${rk}</span><span class="xn"${rowT(r, slug)}><img src="${esc(r.logo)}" alt="" onerror="this.style.visibility='hidden'"><b>${esc(r.team)}</b></span><span>${r.played}</span><span>${r.won}</span><span>${r.drawn}</span><span>${r.lost}</span>${hasGd ? `<span class="xg">${esc(fm(r.gd))}</span>` : ''}<span class="xp">${r.points}</span></div>`; };
+  const lg = z ? `<div class="sxl"><i class="zc"></i>أبطال أوروبا<i class="zr"></i>الهبوط</div>` : '';
+  return `<div class="sx${hasGd ? '' : ' ng'}"><div class="sxr sxh"><span class="xk">#</span><span class="xn">الفريق</span><span>لعب</span><span>ف</span><span>ت</span><span>خ</span>${hasGd ? '<span class="xg">فارق</span>' : ''}<span class="xp">نقاط</span></div>${L.map(row).join('')}</div>${lg}`; };
 const PHN = { 'League Phase': 'مرحلة الدوري', 'Group': 'دور المجموعات', 'Group Stage': 'دور المجموعات', 'Groups': 'دور المجموعات', 'Knockout Round Playoffs': 'ملحق الأدوار الإقصائية', 'Rd of 16': 'دور الـ16', 'Round of 16': 'دور الـ16', 'Round of 32': 'دور الـ32', 'Quarterfinals': 'ربع النهائي', 'Semifinals': 'نصف النهائي', 'Final': 'النهائي', 'Finals': 'النهائي', 'Third Place': 'المركز الثالث', 'First Round': 'الدور الأول', 'Second Round': 'الدور الثاني', 'Third Round': 'الدور الثالث', 'Fourth Round': 'الدور الرابع', 'Fifth Round': 'الدور الخامس', 'Sixth Round': 'الدور السادس', 'Seventh Round': 'الدور السابع', 'Eighth Round': 'الدور الثامن', 'Round of 64': 'دور الـ64' };
 const PHC = { 'ملحق الأدوار الإقصائية': 8, 'دور الـ16': 8, 'دور الـ32': 16, 'ربع النهائي': 4, 'نصف النهائي': 2, 'النهائي': 1 };
 async function calOf(slug) { if (calC[slug]) return calC[slug]; const j = await get(B + '/site/v2/sports/soccer/' + slug + '/scoreboard'); const l0 = (j.leagues || [])[0] || {}; calY[slug] = l0.season && l0.season.year; const ent = ((l0.calendar || [])[0] || {}).entries || []; return calC[slug] = ent.length >= 2 && ent.length <= 14 ? ent : []; }
