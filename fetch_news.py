@@ -87,7 +87,7 @@ def ahly_text(u):
         return ""
 def espn():
     out = []
-    for s in ["uefa.champions", "eng.1", "esp.1", "ita.1", "ger.1"]:
+    for s in ["uefa.champions", "uefa.europa", "uefa.europa.conf", "eng.1", "esp.1", "ita.1", "ger.1"]:
         try:
             j = json.loads(urllib.request.urlopen(urllib.request.Request("https://site.api.espn.com/apis/site/v2/sports/soccer/%s/news?limit=10" % s, headers={"User-Agent": "Mozilla/5.0"}), timeout=25).read().decode("utf-8", "ignore"))
         except Exception as e:
@@ -104,6 +104,19 @@ def dedupe2(l):
         if x["id"] not in seen:
             seen.add(x["id"]); o.append(x)
     return o
+def sky():
+    out = []
+    try:
+        root = ET.fromstring(get("https://www.skysports.com/rss/11095").strip())
+    except Exception as e:
+        print("FAIL sky", e, file=sys.stderr); return out
+    for it in root.iter("item"):
+        t = clean(it.findtext("title")); l = (it.findtext("link") or "").strip(); d = clean(it.findtext("description"))
+        enc = it.find("enclosure"); img = enc.get("url") if enc is not None else ""
+        if not (t and l and img.startswith("http")) or re.search(r"Predictions|Q&A|quiz|podcast|live:|Live:", t): continue
+        out.append({"id": "s" + hashlib.md5(l.encode()).hexdigest()[:10], "src_title": t, "text": d, "image": img, "source": "Sky Sports", "grp": "world", "ts": pubts(it.findtext("pubDate"))})
+    print("sky", len(out), file=sys.stderr)
+    return out
 ah = ahly(); zm = items("https://www.zamaleksc.com/feed.xml", "نادي الزمالك (الموقع الرسمي)", "zamalek")
 IL_RE = re.compile(r'hapoel|maccabi|beitar|israel|sakhnin|هبوعيل|هابويل|مكابي|ميكابي|بيتار|إسرائيل|اسرائيل|سخنين', re.I)
 cand = []
@@ -112,8 +125,9 @@ for x in mix(ah[:12], zm[:20]):
     if not x.get("ts") and x["url"] not in AHTS: ahly_text(x["url"])
     x["ts"] = x.get("ts") or AHTS.get(x["url"], "")
     cand.append({"id": x["id"], "src_title": x["title"], "text": _t, "image": x["image"], "source": x["source"], "grp": "egypt", "ts": x.get("ts", "")})
-for x in espn()[:30]:
+for x in espn()[:40]:
     x["grp"] = "world"; cand.append(x)
+cand += sky()
 if len(cand) < 5:
     print("too few candidates, keeping old file", file=sys.stderr); sys.exit(0)
 cand = [c for c in cand if not IL_RE.search(c['src_title'] + ' ' + c['text'])]
@@ -129,6 +143,7 @@ for c in cand:
     if r["t"] in seen_t: continue
     seen_t.add(r["t"])
     res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"], "ts": c["ts"]})
+res["egypt"] = res["egypt"][:15]; res["world"] = res["world"][:14]
 json.dump(cand, open("cand.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 try:
     old = json.load(open("news.json", encoding="utf-8")); old.pop("updated", None)
