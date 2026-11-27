@@ -708,7 +708,7 @@ function drawList() {
    `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
 let isport = 'bb'; let grpIdx = 0, article = null; const NW = {};
-let hist = [], lg = null, lgSub = 'st', player = null, club = null;
+let stSub = 'st', hist = [], lg = null, lgSub = 'st', player = null, club = null;
 const curO = () => ({ isp: isport, tab, league, lg, lgSub, detail, player, club, grpIdx, article, sa: !!window.SHOWALL, d: dayOff });
 function saveState() { const o = curO(), k = JSON.stringify(o), u = location.pathname + location.search + '#' + encodeURIComponent(k), cs = history.state || {};
   if (window.NOPUSH || !history.state || cs.k === k) history.replaceState({ k, o, i: cs.i || 0, y: cs.y || 0, ov: cs.ov }, '', u);
@@ -889,6 +889,7 @@ async function bracketHTML(slug, ent) {
   const cols = rounds.map((r, i) => `<div class="bc${conn(i) ? ' cn' : ''}${i > 0 && conn(i - 1) ? ' ci' : ''}${r.nm === 'النهائي' ? ' fin' : ''}"><h4>${r.nm === 'النهائي' ? '🏆 ' : ''}${esc(r.nm)}</h4><div class="bb" style="height:${MAXH}px">${slots[i].map(t => `<div class="sl">${t ? tieCard(t) : '<div class="bm ph0">؟<br>لم يُحدد بعد</div>'}</div>`).join('')}</div></div>`).join('');
   return '<div class="br">' + gCol + cols + '</div><div class="empty" style="font-size:12px;padding:6px 12px">' + (cut ? 'تظهر آخر 5 أدوار فقط. ' : '') + 'مباريات الذهاب والإياب تُجمع في خانة واحدة. الخانات الفارغة لم تُحدد بعد، وخطوط الربط ترتبط بالمباراة التي تأهل منها الفريق.</div>';
 }
+function ldBody(j, arr, lg) { return arr.length ? (j.tm ? '<div class="empty" style="padding:6px;font-size:12px">المصدر: Transfermarkt</div>' : '') + arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.photo ? `<img class="ph" loading="lazy" alt="" referrerpolicy="no-referrer" src="${esc(x.photo)}" onerror="this.onerror=null;this.src=PHF">` : x.id ? ph(x.id, x.name) : x.tm0 ? '' : `<img class="ph" alt="" src="${PHF}">`}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>'; }
 async function renderLeague() {
   const L = lgOf(lg), back = '<button class="chip" data-back="1" style="margin:10px 12px">→ رجوع</button>';
   let ent = []; if (!L.src) { try { ent = await calOf(lg); } catch (e) { } }
@@ -902,7 +903,7 @@ async function renderLeague() {
     else if (lgSub === 'st') { const gs = await api('/api/standings/' + lg); body = gs.length ? stGroups(gs, lg) + (gs[0].partial ? '<div class="empty" style="padding:8px">جدول جزئي: تعذر الوصول إلى Transfermarkt</div>' : L.src ? '<div class="empty" style="padding:8px;font-size:12px">المصدر: Transfermarkt</div>' : '') : '<div class="empty">لا يوجد جدول ترتيب لهذه البطولة من المصدر (نظام خروج المغلوب أو غير متاح)</div>'; }
     else {
       const j = await api('/api/leaders/' + lg), arr = lgSub === 'sc' ? j.goals : j.assists;
-      body = arr.length ? (j.tm ? '<div class="empty" style="padding:6px;font-size:12px">المصدر: Transfermarkt</div>' : '') + arr.map((x, i) => `<div class="ld"><span class="rk">${i + 1}</span>${x.photo ? `<img class="ph" loading="lazy" alt="" referrerpolicy="no-referrer" src="${esc(x.photo)}" onerror="this.onerror=null;this.src=PHF">` : x.id ? ph(x.id, x.name) : x.tm0 ? '' : `<img class="ph" alt="" src="${PHF}">`}${x.logo ? `<img src="${esc(x.logo)}" alt="">` : ''}<div class="nm">${pn(x.id, x.name, lg)}<small>${esc(x.team)}${x.matches ? ' · ' + x.matches + ' مباراة' : ''}</small></div><span class="vl">${x.value}</span></div>`).join('') : '<div class="empty">المصدر لا يوفر ' + (lgSub === 'sc' ? 'ترتيب الهدافين' : 'ترتيب صناع الأهداف') + ' لهذه البطولة</div>';
+      body = ldBody(j, arr, lg);
     }
   } catch (e) { body = '<div class="empty">تعذر التحميل، حاول مرة أخرى</div>'; }
   if (lg === L.slug) main.innerHTML = head + body;
@@ -982,8 +983,9 @@ async function render() {
       if (window.SHOWALL) { main.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin:10px 12px"><button class="chip" data-back="1">→ رجوع</button><b style="font-size:17px">كل المباريات</b></div>' + dayBar() + '<div id="list"></div>'; drawList(); return; }
       main.innerHTML = '<div id="hn">' + (window.HN1 || '') + '</div>' + dayBar() + '<div id="list"></div><div id="hn2">' + (window.HN2 || '') + '</div>'; drawList(); homeNews();
     } else if (tab === 'standings') {
-      const slug = league === 'all' ? 'eng.1' : league; const gs = await api('/api/standings/' + slug);
-      main.innerHTML = gs.length ? stGroups(gs, slug) : '<div class="empty">الترتيب غير متاح</div>';
+      const slug = league === 'all' ? 'eng.1' : league; const sg = `<div class="seg">${[['st', 'الترتيب'], ['sc', 'الهدافون'], ['as', 'صناع الأهداف']].map(x => `<button data-ssub="${x[0]}" class="${stSub === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>`;
+      if (stSub === 'st') { const gs = await api('/api/standings/' + slug); main.innerHTML = sg + (gs.length ? stGroups(gs, slug) : '<div class="empty">الترتيب غير متاح</div>'); }
+      else { const j = await api('/api/leaders/' + slug), arr = stSub === 'sc' ? j.goals : j.assists; main.innerHTML = sg + ldBody(j, arr, slug); }
     } else {
       const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; let items = await api('/api/news/' + slug); fxOn = true; items = await trItems(items);
       main.innerHTML = items.map(n => { NW[n.id] = n; return `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></div>`; }).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
@@ -1007,7 +1009,7 @@ new MutationObserver(() => { if (!fxOn || /جاري التحميل/.test(mainEl.
 document.getElementById('home').addEventListener('click', () => { window.SHOWALL = false; fxOn = true; tab = 'matches'; article = null; detail = null; lg = null; player = null; club = null; grpIdx = 0; hist = []; dayOff = 0; league = 'all'; searchQ = ''; const q = document.getElementById('q'); if (q) q.value = ''; document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.tab === 'matches')); chips(); scrollTo(0, 0); render(); });
 addEventListener('pageshow', e => { if (e.persisted) { dayOff = 0; detail = null; render(); } });
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-p],[data-t],[data-grp],[data-n]')) fxOn = true;
+  if (e.target.closest('[data-day],[data-m],[data-back],[data-tab],[data-lg],[data-lsub],[data-ssub],[data-p],[data-t],[data-grp],[data-n]')) fxOn = true;
   const isp = e.target.closest('[data-isp]'); if (isp) { isport = isp.dataset.isp; fxOn = true; scrollTo(0, 0); return render(); }
   if (e.target.closest('[data-seeall]')) { window.SHOWALL = true; fxOn = true; scrollTo(0, 0); return render(); }
   const gn = e.target.closest('[data-gonews]'); if (gn) { document.querySelector('nav [data-tab=news]').click(); return; }
@@ -1020,6 +1022,7 @@ document.addEventListener('click', e => {
   const gh = e.target.closest('.gh'); if (gh) { openG = openG === gh.dataset.g ? null : gh.dataset.g; return drawLeagues(); }
   const lr = e.target.closest('[data-lg]'); if (lr) { lg = lr.dataset.lg; lgSub = 'st'; grpIdx = 0; scrollTo(0, 0); return render(); }
   const ls = e.target.closest('[data-lsub]'); if (ls) { lgSub = ls.dataset.lsub; return render(); }
+  const ss = e.target.closest('[data-ssub]'); if (ss) { stSub = ss.dataset.ssub; return render(); }
   if (e.target.closest('[data-back]')) {
     if (history.state && history.state.i > 0 && !history.state.ov) { history.back(); return; }
     if (window.SHOWALL) { window.SHOWALL = false; scrollTo(0, 0); return render(); }
