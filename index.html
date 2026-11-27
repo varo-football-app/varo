@@ -505,7 +505,11 @@ async function domNews() { try { const r = await fetch('news.json?v=' + (window.
 async function worldNews() { await domNews(); return _wd || []; }
 async function apiFetch(u0){const [u,qs]=u0.split('?');const q=new URLSearchParams(qs||'').get('date');
   if(u==='/api/leagues')return LEAGUES;
-  if(u==='/api/matches'){const r=await Promise.allSettled(LEAGUES.map(async l=>({league:l,matches:await matchesOf(l.slug,q)})));return r.filter(x=>x.status==='fulfilled'&&x.value.matches.length).map(x=>x.value);}
+  if(u==='/api/matches'){const PRI=['egy.1','caf.champions','caf.confed','uefa.champions','uefa.europa','uefa.europa.conf','eng.1','esp.1','ita.1','ger.1','fra.1','ksa.1'],key=String(q||''),run=async l=>{try{const m=await matchesOf(l.slug,q);return m.length?{league:l,matches:m}:null}catch(e){return null}};window._mcR=window._mcR||{};window._mcP=window._mcP||{};
+  if(window._mcR[key]&&Date.now()-window._mcR[key].t<90000)return window._mcR[key].v;if(window._mcR[key]){delete window._mcR[key];delete window._mcP[key]}
+  const pri=(await Promise.all(LEAGUES.filter(l=>PRI.includes(l.slug)).map(run))).filter(Boolean);
+  if(!window._mcP[key]){window._mcP[key]=1;Promise.all(LEAGUES.filter(l=>!PRI.includes(l.slug)).map(run)).then(r=>{window._mcR[key]={t:Date.now(),v:pri.concat(r.filter(Boolean))};setTimeout(()=>{try{if(typeof tab!=='undefined'&&tab==='matches'&&!detail&&!article&&!window.SHOWALL&&typeof render==='function'){window.SILENT=true;Promise.resolve(render()).finally(()=>{window.SILENT=false})}}catch(e){window.SILENT=false}},50)})}
+  return pri;}
   let m;
   if(m=u.match(/^\/api\/match\/([\w.]+)\/(\w+)$/)){if(!/^\d+$/.test(m[2])||!lgOf(m[1])||lgOf(m[1]).src)throw new Error('details unavailable');return normalizeSummary(await get(B+'/site/v2/sports/soccer/'+m[1]+'/summary?event='+m[2]));}
   if(m=u.match(/^\/api\/matches\/([\w.]+)$/))return matchesOf(m[1],q);
