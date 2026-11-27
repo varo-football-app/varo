@@ -130,6 +130,8 @@ for x in espn()[:40]:
 cand += sky()
 if len(cand) < 5:
     print("too few candidates, keeping old file", file=sys.stderr); sys.exit(0)
+RES_RE = re.compile(r"\b(beat|beats|win over|wins|win for|first win|heavy win|cruise|rally to|comeback win|draw|draws|held|defeat|thrash|stun|stuns|hit .* past|straight win|victory)\b|يتغلب|يهزم|يفوز|فوز|يتعادل|تعادل|يكتسح|يحسم|يقلب|يخسر|هزيمة|يتأهل|يتأهلن|يحصد|ذهبيات|ذهبية|قلب|يقود عودة", re.I)
+cand = [c for c in cand if not RES_RE.search(c['src_title'])]
 cand = [c for c in cand if not IL_RE.search(c['src_title'] + ' ' + c['text'])]
 _cut = (_dt.datetime.utcnow() - _dt.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
 cand = [c for c in cand if c.get("ts") and c["ts"] >= _cut]
