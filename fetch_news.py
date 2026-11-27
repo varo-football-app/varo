@@ -6,6 +6,12 @@ def get(u):
 def clean(t):
     t = re.sub(r"<[^>]+>", " ", t or "")
     return re.sub(r"\s+", " ", html.unescape(t)).strip()
+import email.utils, datetime as _dt
+def pubts(v):
+    try:
+        return email.utils.parsedate_to_datetime(v).astimezone(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except Exception:
+        return ""
 def items(url, src, kind):
     out = []
     try:
@@ -30,7 +36,7 @@ def items(url, src, kind):
         if kind == "youm7" and re.search(r"الجودو|السلة|كرة اليد|الطائرة|السباحة|التنس|الإسكواش|الاسكواش|المصارعة|الجمباز|الملاكمة|الكاراتيه|التايكوندو|الفروسية|رفع الأثقال|الشطرنج|الأولمبية", title + " " + summ):
             continue
         if title and link and img.startswith("http"):
-            out.append({"id": "n" + hashlib.md5(link.encode()).hexdigest()[:12], "title": title, "summary": summ[:400], "image": img, "url": link, "source": src, "cat": clean(it.findtext("category"))})
+            out.append({"id": "n" + hashlib.md5(link.encode()).hexdigest()[:12], "title": title, "summary": summ[:400], "image": img, "url": link, "source": src, "cat": clean(it.findtext("category")), "ts": pubts(it.findtext("pubDate"))})
     print(src, len(out), file=sys.stderr)
     return out
 def dedupe(l):
@@ -69,9 +75,12 @@ def ahly():
     return out
 
 import os, datetime
+AHTS = {}
 def ahly_text(u):
     try:
         h = get(u)
+        m = re.search(r'datePublished"?:"(20[\d\-T:.]+Z)', h)
+        AHTS[u] = m.group(1)[:19] + "Z" if m else ""
         ps = [clean(t) for t in re.findall(r"<p[^>]*>(.*?)</p>", h, re.S)]
         return " ".join(p for p in ps if len(p) > 25 and "{" not in p)[:1200]
     except Exception:
@@ -87,7 +96,7 @@ def espn():
             im = [x.get("url") for x in a.get("images", []) if x.get("url", "").startswith("https://a.espncdn.com/photo")]
             t = a.get("headline", "")
             if not im or re.search(r"Highlights|Watch|VAR review|Transfer rumors", t): continue
-            out.append({"id": "w" + str(a["id"]), "src_title": t, "text": a.get("description", ""), "image": im[0], "source": "ESPN"})
+            out.append({"id": "w" + str(a["id"]), "src_title": t, "text": a.get("description", ""), "image": im[0], "source": "ESPN", "ts": (a.get("published") or "")[:19] + "Z" if a.get("published") else ""})
     return dedupe2(out)
 def dedupe2(l):
     seen, o = set(), []
@@ -98,19 +107,28 @@ def dedupe2(l):
 ah = ahly(); zm = items("https://www.zamaleksc.com/feed.xml", "نادي الزمالك (الموقع الرسمي)", "zamalek")
 IL_RE = re.compile(r'hapoel|maccabi|beitar|israel|sakhnin|هبوعيل|هابويل|مكابي|ميكابي|بيتار|إسرائيل|اسرائيل|سخنين', re.I)
 cand = []
-for x in mix(ah[:12], zm[:12]):
-    cand.append({"id": x["id"], "src_title": x["title"], "text": x["summary"] or ahly_text(x["url"]), "image": x["image"], "source": x["source"], "grp": "egypt"})
+for x in mix(ah[:12], zm[:20]):
+    _t = x["summary"] or ahly_text(x["url"])
+    if not x.get("ts") and x["url"] not in AHTS: ahly_text(x["url"])
+    x["ts"] = x.get("ts") or AHTS.get(x["url"], "")
+    cand.append({"id": x["id"], "src_title": x["title"], "text": _t, "image": x["image"], "source": x["source"], "grp": "egypt", "ts": x.get("ts", "")})
 for x in espn()[:30]:
     x["grp"] = "world"; cand.append(x)
 if len(cand) < 5:
     print("too few candidates, keeping old file", file=sys.stderr); sys.exit(0)
 cand = [c for c in cand if not IL_RE.search(c['src_title'] + ' ' + c['text'])]
+_cut = (_dt.datetime.utcnow() - _dt.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
+cand = [c for c in cand if c.get("ts") and c["ts"] >= _cut]
+cand.sort(key=lambda c: c["ts"], reverse=True)
 rw = json.load(open("rewrites.json", encoding="utf-8")) if os.path.exists("rewrites.json") else {}
 res = {"egypt": [], "world": [], "arab": []}
+seen_t = set()
 for c in cand:
     r = rw.get(c["id"])
     if not r: continue
-    res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"]})
+    if r["t"] in seen_t: continue
+    seen_t.add(r["t"])
+    res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"], "ts": c["ts"]})
 json.dump(cand, open("cand.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 try:
     old = json.load(open("news.json", encoding="utf-8")); old.pop("updated", None)
