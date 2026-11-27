@@ -470,7 +470,7 @@ function normalizeSummary(j) {
 
 const B='https://site.api.espn.com/apis',TS='https://www.thesportsdb.com/api/v1/json/123/';
 const EGY_NEWS=['eng.1','esp.1','fra.1','ger.1','ita.1','tur.1','ksa.1','ned.1','por.1','eng.2','fifa.worldq.caf','caf.nations'];
-const get=async u=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json();};
+const get=async u=>{const H=[u,u.startsWith('https://site.api.espn.com/apis/')?u.replace('site.api.espn.com','site.web.api.espn.com'):u];let er;for(let i=0;i<2;i++){try{const r=await fetch(H[i]);if(r.status===404)throw new Error(404);if(!r.ok)throw new Error(r.status);return await r.json();}catch(e){er=e;if(String(e.message)==='404')break;if(i<1)await new Promise(z=>setTimeout(z,400));}}throw er;};
 const lgOf=s=>LEAGUES.find(l=>l.slug===s);
 async function matchesOf(s,q){const l=lgOf(s);if(!l)throw new Error('bad');
   if(l.src==='tm')return [];
@@ -1010,7 +1010,7 @@ async function render() {
       const slug = tab === 'egypt' ? 'egypt-players' : league === 'all' ? 'eng.1' : league; let items = await api('/api/news/' + slug); fxOn = true; items = await trItems(items);
       main.innerHTML = items.map(n => { NW[n.id] = n; return `<div class="news" data-n="${esc(n.id)}" style="cursor:pointer"><img src="${esc(n.image)}" alt=""><div>${esc(n.title)}</div></div>`; }).join('') || '<div class="empty">' + (tab === 'egypt' ? 'لا أخبار للمحترفين المصريين حاليا' : 'لا أخبار') + '</div>';
     }
-  } catch (e) { if (!window.SILENT) main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small></div>'; }
+  } catch (e) { if (!window.SILENT) main.innerHTML = '<div class="empty">تعذر التحميل، حاول مرة أخرى<br><small>' + esc(e.message) + '</small><br><button class="chip" style="margin-top:12px" onclick="render()">إعادة المحاولة</button></div>'; }
 }
 function chips() {
   const ordered = leaguesOrdered();
