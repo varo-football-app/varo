@@ -87,16 +87,16 @@ def ahly_text(u):
         return ""
 def espn():
     out = []
-    for s in ["uefa.champions", "uefa.europa", "uefa.europa.conf", "eng.1", "esp.1", "ita.1", "ger.1"]:
+    for s in ["soccer/uefa.champions", "soccer/uefa.europa", "soccer/uefa.europa.conf", "soccer/eng.1", "soccer/esp.1", "soccer/ita.1", "soccer/ger.1", "soccer/fra.1", "soccer/ksa.1", "soccer/usa.1", "soccer/caf.champions", "soccer/fifa.world", "basketball/nba", "tennis/atp"]:
         try:
-            j = json.loads(urllib.request.urlopen(urllib.request.Request("https://site.api.espn.com/apis/site/v2/sports/soccer/%s/news?limit=10" % s, headers={"User-Agent": "Mozilla/5.0"}), timeout=25).read().decode("utf-8", "ignore"))
+            j = json.loads(urllib.request.urlopen(urllib.request.Request("https://site.api.espn.com/apis/site/v2/sports/%s/news?limit=10" % s, headers={"User-Agent": "Mozilla/5.0"}), timeout=25).read().decode("utf-8", "ignore"))
         except Exception as e:
             print("FAIL espn", s, e, file=sys.stderr); continue
         for a in j.get("articles", []):
             im = [x.get("url") for x in a.get("images", []) if x.get("url", "").startswith("https://a.espncdn.com/photo")]
             t = a.get("headline", "")
             if not im or re.search(r"Highlights|Watch|VAR review|Transfer rumors", t): continue
-            out.append({"id": "w" + str(a["id"]), "src_title": t, "text": a.get("description", ""), "image": im[0], "source": "ESPN", "ts": (a.get("published") or "")[:19] + "Z" if a.get("published") else ""})
+            out.append({"id": "w" + str(a["id"]), "src_title": t, "text": a.get("description", ""), "image": im[0], "source": "ESPN", "cat": s.split("/")[1], "ts": (a.get("published") or "")[:19] + "Z" if a.get("published") else ""})
     return dedupe2(out)
 def dedupe2(l):
     seen, o = set(), []
@@ -124,8 +124,8 @@ for x in mix(ah[:12], zm[:20]):
     _t = x["summary"] or ahly_text(x["url"])
     if not x.get("ts") and x["url"] not in AHTS: ahly_text(x["url"])
     x["ts"] = x.get("ts") or AHTS.get(x["url"], "")
-    cand.append({"id": x["id"], "src_title": x["title"], "text": _t, "image": x["image"], "source": x["source"], "grp": "egypt", "ts": x.get("ts", "")})
-for x in espn()[:40]:
+    cand.append({"id": x["id"], "src_title": x["title"], "text": _t, "image": x["image"], "source": x["source"], "cat": ("zamalek" if x["source"] and "الزمالك" in x["source"] else "ahly"), "grp": "egypt", "ts": x.get("ts", "")})
+for x in espn()[:120]:
     x["grp"] = "world"; cand.append(x)
 cand += sky()
 if len(cand) < 5:
@@ -144,8 +144,8 @@ for c in cand:
     if not r: continue
     if r["t"] in seen_t: continue
     seen_t.add(r["t"])
-    res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"], "ts": c["ts"]})
-res["egypt"] = res["egypt"][:15]; res["world"] = res["world"][:14]
+    res[c["grp"]].append({"id": c["id"], "title": r["t"], "body": r["b"], "image": c["image"], "source": c["source"], "cat": c.get("cat", ""), "ts": c["ts"]})
+res["egypt"] = res["egypt"][:15]; res["world"] = res["world"][:22]
 json.dump(cand, open("cand.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 try:
     old = json.load(open("news.json", encoding="utf-8")); old.pop("updated", None)
