@@ -1219,5 +1219,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 document.addEventListener('touchstart',function(e){if(e.touches.length!==1){ok=0;return}var t=e.touches[0];tx=t.clientX;ty=t.clientY;tt=Date.now();tg=e.target;ok=!e.target.closest('input,textarea,select,.ddp,#ov,.leaflet-container,.pitch')&&!hs(e.target)},{passive:true});
 document.addEventListener('touchend',function(e){if(!ok)return;ok=0;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.7||Date.now()-tt>700)return;
 try{if(document.getElementById('spl')||(document.querySelector('#lsel.open'))||article||player||club||detail||(tab==='leagues'&&lg))return}catch(x){return}
-var bs=[].slice.call(document.querySelectorAll('nav button[data-tab]')),i=bs.findIndex(function(b){return b.classList.contains('on')});if(i<0)return;var n=dx<0?i+1:i-1;if(n<0||n>=bs.length)return;bs[n].click();window.scrollTo(0,0)},{passive:true})})();</script>
+var bs=[].slice.call(document.querySelectorAll('nav button[data-tab]')),i=bs.findIndex(function(b){return b.classList.contains('on')});if(i<0)return;var n=dx<0?i-1:i+1;if(n<0||n>=bs.length)return;bs[n].click();window.scrollTo(0,0)},{passive:true})})();</script>
 </body></html>
