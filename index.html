@@ -724,7 +724,7 @@ function drawList() {
   const tot = rows.reduce((n, d) => n + d.matches.length, 0), LIM = 10; let left = (q || window.SHOWALL || tot <= LIM + 2) ? 1e9 : LIM;
   let part;
   if (window.SHOWALL || q) part = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('');
-  else { const fl = []; (rows.some(d => d.pr < 2) ? rows.filter(d => d.pr < 2) : rows).forEach(d => d.matches.forEach(m => fl.push(`<div class="hm"><div class="hml">${esc(d.league.name)}</div>${card(m)}</div>`))); part = fl.length ? `<div class="hh"><b>المباريات</b><a data-seeall="1">عرض الكل (${tot})</a></div><div class="hs hmr">${fl.slice(0, 14).join('')}</div>` : ''; }
+  else { const fl = [], fk = []; (rows.some(d => d.pr < 2) ? rows.filter(d => d.pr < 2) : rows).forEach(d => d.matches.forEach(m => fk.push([W[m.status], fk.length, `<div class="hm"><div class="hml">${esc(d.league.name)}</div>${card(m)}</div>`]))); fk.sort((x, y) => x[0] - y[0] || x[1] - y[1]).forEach(x => fl.push(x[2])); part = fl.length ? `<div class="hh"><b>المباريات</b><a data-seeall="1">عرض الكل (${tot})</a></div><div class="hs hmr">${fl.slice(0, 14).join('')}</div>` : ''; }
   el.innerHTML = part ||
    `<div class="empty">${q ? 'لا نتائج للبحث' : 'لا توجد مباريات ' + (dayOff === 0 ? 'اليوم' : 'في هذا اليوم')}</div>`;
 }
