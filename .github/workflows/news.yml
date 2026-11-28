@@ -11,9 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 fetch_news.py
+      - name: update club logos
+        continue-on-error: true
+        run: timeout 240 python3 logos.py
       - name: commit if changed
         run: |
           git config user.name "varo-news-bot"
           git config user.email "varo-news-bot@users.noreply.github.com"
-          git add news.json
+          git add news.json logos.json
           git diff --cached --quiet || (git commit -m "Update news" && git push)
