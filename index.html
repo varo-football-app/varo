@@ -1226,13 +1226,14 @@ document.addEventListener('touchend',function(e){if(!ok)return;ok=0;var t=e.chan
 try{if(document.getElementById('spl')||(document.querySelector('#lsel.open'))||article||player||club||detail||(tab==='leagues'&&lg))return}catch(x){return}
 if(tab==='standings'){var ss=[].slice.call(document.querySelectorAll('button[data-ssub]')),k=ss.findIndex(function(b){return b.classList.contains('on')}),m=dx<0?k-1:k+1;if(k>=0&&m>=0&&m<ss.length){ss[m].click();window.scrollTo(0,0);return}}var bs=[].slice.call(document.querySelectorAll('nav button[data-tab]')),i=bs.findIndex(function(b){return b.classList.contains('on')});if(i<0)return;var n=dx<0?i-1:i+1;if(n<0||n>=bs.length)return;bs[n].click();window.scrollTo(0,0)},{passive:true})})();</script>
 <script>(function(){try{var B='https://abacus.jasoncameron.dev/hit/varo-football-app/';if(!localStorage.getItem('varo_u')){localStorage.setItem('varo_u','1');fetch(B+'unique-visitors',{mode:'no-cors'}).catch(function(){})}if(!sessionStorage.getItem('varo_s')){sessionStorage.setItem('varo_s','1');fetch(B+'total-visits',{mode:'no-cors'}).catch(function(){})}}catch(e){}})();</script>
-<script>(function(){var C={};try{C=JSON.parse(localStorage.getItem('varo_lg')||'{}')}catch(e){}
+<script>(function(){var C={},LJ={};try{var q=JSON.parse(localStorage.getItem('varo_lg2')||'{}');if(q.t&&Date.now()-q.t<2592e5)C=q.m||{}}catch(e){}
 var TM='https://tmssl.akamaized.net/images/wappen/head/';C['Raja']=C['Raja CA']=C['Raja Casablanca']=TM+'2068.png';C['ASKO Kara']=TM+'29785.png';
-function sv(){try{localStorage.setItem('varo_lg',JSON.stringify(C))}catch(e){}}
+function sv(){try{localStorage.setItem('varo_lg2',JSON.stringify({t:Date.now(),m:C}))}catch(e){}}
 function fix(i){var n=((i.closest('.t,.r,.tm,.xn')||{}).innerText||'').trim().split('\n')[0].trim();if(!n||n.length>40||i.dataset.lf)return;i.dataset.lf=1;
 function set(u){i.src=u;i.style.visibility='visible'}
+if(LJ[n]){set(LJ[n]);return}
 if(C[n]){if(C[n]!=='-')set(C[n]);return}
 fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=96&gsrsearch='+encodeURIComponent(n+' football club')).then(function(r){return r.json()}).then(function(j){var p=Object.values((j.query||{}).pages||{})[0],u=p&&p.thumbnail&&p.thumbnail.source,k=n.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ')[0];if(u&&p.title.toLowerCase().indexOf(k)<0)u='';C[n]=u||'-';sv();if(u)set(u)}).catch(function(){})}
 function scan(){document.querySelectorAll('.t img,.r img,.tm img,.xn img').forEach(function(i){var a=i.getAttribute('src');if(!a||i.style.visibility==='hidden'||(i.complete&&!i.naturalWidth))fix(i)})}
-new MutationObserver(function(){clearTimeout(window._lt);window._lt=setTimeout(scan,900)}).observe(document.body,{childList:true,subtree:true});setInterval(scan,5000)})()</script>
+new MutationObserver(function(){clearTimeout(window._lt);window._lt=setTimeout(scan,900)}).observe(document.body,{childList:true,subtree:true});try{fetch('logos.json?h='+Math.floor(Date.now()/18e5)).then(function(r){return r.json()}).then(function(j){LJ=j;scan()}).catch(function(){})}catch(e){}setInterval(scan,5000)})()</script>
 </body></html>
