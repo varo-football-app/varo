@@ -1227,6 +1227,7 @@ try{if(document.getElementById('spl')||(document.querySelector('#lsel.open'))||a
 if(tab==='standings'){var ss=[].slice.call(document.querySelectorAll('button[data-ssub]')),k=ss.findIndex(function(b){return b.classList.contains('on')}),m=dx<0?k-1:k+1;if(k>=0&&m>=0&&m<ss.length){ss[m].click();window.scrollTo(0,0);return}}var bs=[].slice.call(document.querySelectorAll('nav button[data-tab]')),i=bs.findIndex(function(b){return b.classList.contains('on')});if(i<0)return;var n=dx<0?i-1:i+1;if(n<0||n>=bs.length)return;bs[n].click();window.scrollTo(0,0)},{passive:true})})();</script>
 <script>(function(){try{var B='https://abacus.jasoncameron.dev/hit/varo-football-app/';if(!localStorage.getItem('varo_u')){localStorage.setItem('varo_u','1');fetch(B+'unique-visitors',{mode:'no-cors'}).catch(function(){})}if(!sessionStorage.getItem('varo_s')){sessionStorage.setItem('varo_s','1');fetch(B+'total-visits',{mode:'no-cors'}).catch(function(){})}}catch(e){}})();</script>
 <script>(function(){var C={};try{C=JSON.parse(localStorage.getItem('varo_lg')||'{}')}catch(e){}
+var TM='https://tmssl.akamaized.net/images/wappen/head/';C['Raja']=C['Raja CA']=C['Raja Casablanca']=TM+'2068.png';C['ASKO Kara']=TM+'29785.png';
 function sv(){try{localStorage.setItem('varo_lg',JSON.stringify(C))}catch(e){}}
 function fix(i){var n=((i.closest('.t,.r,.tm,.xn')||{}).innerText||'').trim().split('\n')[0].trim();if(!n||n.length>40||i.dataset.lf)return;i.dataset.lf=1;
 function set(u){i.src=u;i.style.visibility='visible'}
