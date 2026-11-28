@@ -720,7 +720,7 @@ function drawList() {
   rows.forEach(d => { if (!IMP(d.league)) { const em = d.matches.filter(isEg); if (em.length && /^(fifa|caf|uefa\.nations|afc\.asian|global)/.test(d.league.slug)) { extra.push({ league: d.league, matches: em, w: Math.min(...em.map(m => W[m.status])), imp: 1 }); d.matches = d.matches.filter(m => !isEg(m)); } } else d.imp = 1; });
   rows.push(...extra); rows.forEach(d => { if (d.imp) d.pr = d.league.slug === 'egy.1' ? 0 : 1; else d.pr = 2; });
   const rows2 = rows.filter(d => d.matches.length); rows.length = 0; rows.push(...rows2);
-  rows.sort((x, y) => x.pr - y.pr || x.w - y.w);
+  rows.sort((x, y) => x.w - y.w || x.pr - y.pr);
   const tot = rows.reduce((n, d) => n + d.matches.length, 0), LIM = 10; let left = (q || window.SHOWALL || tot <= LIM + 2) ? 1e9 : LIM;
   let part;
   if (window.SHOWALL || q) part = rows.map(d => `<div class="lg">${esc(d.league.name)}</div>${d.matches.map(card).join('')}`).join('');
@@ -798,7 +798,7 @@ const SECH = ['الدوري المصري لكرة اليد', 'منتخب مصر 
 const HBF = { 'مصر': 'egy', 'السعودية': 'ksa', 'الرأس الأخضر': 'cpv', 'إيطاليا': 'ita' };
 const hbT = n => `<div class="t">${HBF[n] ? `<img src="https://a.espncdn.com/i/teamlogos/countries/500/${HBF[n]}.png" alt="" loading="lazy" style="object-fit:contain">` : HBK[n] ? `<img src="${HBL[HBK[n]]}" alt="" style="border-radius:50%;background:#e9eaf0;object-fit:cover">` : `<div style="width:36px;height:36px;border-radius:50%;background:#33364a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px">${esc(n.charAt(0))}</div>`}<span>${esc(n)}</span></div>`;
 function egHB() {
-  const now = Date.now(), L = EGHB.filter(m => new Date(m.t).getTime() >= todayStart()).sort((x, y) => x.sec - y.sec || new Date(x.t) - new Date(y.t));
+  const now = Date.now(), L = EGHB.filter(m => new Date(m.t).getTime() >= todayStart()).sort((x, y) => { const k = m => m.s != null ? 2 : (now >= new Date(m.t) && now < +new Date(m.t) + 2 * 3600e3 ? 0 : 1); return x.sec - y.sec || k(x) - k(y) || new Date(x.t) - new Date(y.t); });
   if (!L.length) return '';
   const card = m => { const st = new Date(m.t), fin = m.s != null, live = !fin && now >= st && now < +st + 2 * 3600e3, late = !fin && now >= +st + 2 * 3600e3;
     const sc = fin ? `${m.s[1]} : ${m.s[0]}` : '-';
@@ -847,7 +847,7 @@ const dayGroups = (arr, card) => { const td = dayKey(Date.now()), tm = dayKey(Da
       out += `<div style="font-size:13px;font-weight:700;color:var(--red);margin:12px 4px 0">${lb ? lb + ' · ' : ''}${esc(dt)}</div>`; } out += card(m); }); return out; };
 const todayStart = () => Date.parse(new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }) + 'T00:00:00+02:00');
 function egBB() {
-  const now = Date.now(), L = EGBB.filter(m => new Date(m.t).getTime() >= todayStart()).sort((x, y) => new Date(x.t) - new Date(y.t));
+  const now = Date.now(), L = EGBB.filter(m => new Date(m.t).getTime() >= todayStart()).sort((x, y) => { const k = m => m.s != null ? 2 : (now >= new Date(m.t) && now < +new Date(m.t) + 2.5 * 3600e3 ? 0 : 1); return k(x) - k(y) || new Date(x.t) - new Date(y.t); });
   if (!L.length) return '';
   const card = m => { const st = new Date(m.t), fin = m.s != null, live = !fin && now >= st && now < +st + 2.5 * 3600e3, late = !fin && now >= +st + 2.5 * 3600e3;
     const sc = fin ? `${m.s[1]} : ${m.s[0]}` : '-';
@@ -1239,8 +1239,8 @@ function scan(){cen();document.querySelectorAll('.t img,.r img,.tm img,.xn img')
 new MutationObserver(function(){clearTimeout(window._lt);window._lt=setTimeout(scan,900)}).observe(document.body,{childList:true,subtree:true});try{fetch('logos.json?h='+Math.floor(Date.now()/18e5)).then(function(r){return r.json()}).then(function(j){LJ=j;scan()}).catch(function(){})}catch(e){}document.addEventListener('click',function(){setTimeout(cen,150);setTimeout(cen,600)});setInterval(scan,5000)})()</script>
 <script>(function(){var LG=[['egy.1','الدوري المصري'],['eng.1','الدوري الإنجليزي'],['esp.1','الدوري الإسباني'],['ger.1','الدوري الألماني'],['fra.1','الدوري الفرنسي'],['ita.1','الدوري الإيطالي']],D=[],i=0,m=document.getElementById('main'),el=document.createElement('div');el.id='lead';el.style.display='none';m.parentNode.insertBefore(el,m);
 function e(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function paint(){D=D.filter(Boolean);if(!D.length)return;var d=D[i%D.length],r=d.r,gd=Number(r.gd);el.innerHTML='<div class="ldr"><div class="ldc"><small>'+e(d.n)+' · <b>المتصدر</b></small><div class="ldt">'+(r.logo?'<img loading="eager" src="'+e(r.logo)+'" alt="" onerror="this.style.display=\'none\'">':'')+'<div><b>'+e(r.points)+'</b><i>نقطة</i></div></div><span>'+e(r.team)+'</span></div><div class="ldc"><small>إحصائيات المتصدر</small><div class="ldn"><div><b>'+e(r.played)+'</b><i>مباراة</i></div><div><b>'+e(r.won)+'</b><i>فوز</i></div><div><b dir="ltr">'+(gd>0?'+':'')+e(isNaN(gd)?r.gd:gd)+'</b><i>فارق</i></div></div></div></div><div class="ldd">'+D.map(function(_,k){return'<u'+(k===i%D.length?' class="on"':'')+'></u>'}).join('')+'</div>'}
-function load(){LG.forEach(function(l,k){standingsOf(l[0]).then(function(g){var rows=(g&&g[0]&&g[0].rows)||[];if(!rows.length)return;var x=rows.slice().sort(function(a,b){return(a.rank||99)-(b.rank||99)})[0];D[k]={n:l[1],r:x};paint()}).catch(function(){})})}
+function paint(){D=D.filter(Boolean);if(!D.length)return;var d=D[i%D.length],r=d.r,gd=Number(r.gd);el.innerHTML='<div class="ldr" data-lg="'+d.s+'" style="cursor:pointer"><div class="ldc"><small>'+e(d.n)+' · <b>المتصدر</b></small><div class="ldt">'+(r.logo?'<img loading="eager" src="'+e(r.logo)+'" alt="" onerror="this.style.display=\'none\'">':'')+'<div><b>'+e(r.points)+'</b><i>نقطة</i></div></div><span>'+e(r.team)+'</span></div><div class="ldc"><small>إحصائيات المتصدر</small><div class="ldn"><div><b>'+e(r.played)+'</b><i>مباراة</i></div><div><b>'+e(r.won)+'</b><i>فوز</i></div><div><b dir="ltr">'+(gd>0?'+':'')+e(isNaN(gd)?r.gd:gd)+'</b><i>فارق</i></div></div></div></div><div class="ldd">'+D.map(function(_,k){return'<u'+(k===i%D.length?' class="on"':'')+'></u>'}).join('')+'</div>'}
+function load(){LG.forEach(function(l,k){standingsOf(l[0]).then(function(g){var rows=(g&&g[0]&&g[0].rows)||[];if(!rows.length)return;var x=rows.slice().sort(function(a,b){return(a.rank||99)-(b.rank||99)})[0];D[k]={n:l[1],r:x,s:l[0]};paint()}).catch(function(){})})}
 function vis(){var ok=false;try{ok=tab==='matches'&&!detail&&!article&&!player&&!club&&!window.SHOWALL}catch(x){}el.style.display=ok&&D.filter(Boolean).length?'':'none'}
 setInterval(function(){vis();var a=D.filter(Boolean);if(el.style.display==='none'||a.length<2)return;var w=el.firstChild;if(w)w.classList.add('fd');setTimeout(function(){i++;D=D.filter(Boolean);paint()},350)},5000);
 setInterval(vis,500);setInterval(load,18e5);load()})()</script>
